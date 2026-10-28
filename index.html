@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pacvue Agent Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: project header + 4 tabs. Overview = setup checklist → KPI/campaign workspace with AI suggestions, collapsible context rail on the right, a floating AI input pinned above the bottom edge. */
+:root {
+  --bg: #fafaf9; --surface: #ffffff; --surface-2: #f1f1ef; --fg: #1c1c1a; --fg-2: #55554f; --fg-3: #8a8a82; --line: #e4e4df;
+  --accent: #1f6f6a; --accent-soft: #e3f0ee; --accent-fg: #ffffff;
+  --good: #1f8a5b; --good-soft: #e1f3ea; --warn: #b7700b; --warn-soft: #fbefd9; --crit: #c2402e; --crit-soft: #fae4e0;
+  --font-ui: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+  --radius: 12px; --shadow: 0 1px 2px rgba(28,28,26,.05), 0 6px 20px rgba(28,28,26,.06); --shadow-lg: 0 4px 12px rgba(28,28,26,.08), 0 16px 48px rgba(28,28,26,.14);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121311; --surface: #1a1b19; --surface-2: #222420; --fg: #ecece8; --fg-2: #b0b0a8; --fg-3: #74746d; --line: #2c2e2a;
+  --accent: #6fc2bb; --accent-soft: #15302d; --accent-fg: #121311;
+  --good: #4fc68b; --good-soft: #15302a; --warn: #e1a63c; --warn-soft: #3a2d14; --crit: #ef7e6c; --crit-soft: #3d1f1a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 4px 12px rgba(0,0,0,.5), 0 16px 48px rgba(0,0,0,.5); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121311; --surface: #1a1b19; --surface-2: #222420; --fg: #ecece8; --fg-2: #b0b0a8; --fg-3: #74746d; --line: #2c2e2a;
+  --accent: #6fc2bb; --accent-soft: #15302d; --accent-fg: #121311;
+  --good: #4fc68b; --good-soft: #15302a; --warn: #e1a63c; --warn-soft: #3a2d14; --crit: #ef7e6c; --crit-soft: #3d1f1a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 4px 12px rgba(0,0,0,.5), 0 16px 48px rgba(0,0,0,.5); color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; line-height: 1.25; font-weight: 600; }
+p { margin: 0; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+.shell { min-width: 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px; max-width: 1440px; margin: 0 auto; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-block: 12px; font-size: 13px; color: var(--fg-2); }
+.top .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 9px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit; transition: background .15s; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.dark { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--fg-2); }
+.btn.sm { padding: 4px 10px; font-size: 12px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.proj { display: flex; align-items: center; gap: 14px; padding-block: 8px 4px; }
+.proj .ic { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 16px; flex: none; }
+.proj h1 { font-size: 20px; }
+.proj small { display: block; font-weight: 400; color: var(--fg-3); font-size: 12px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px 18px; border-bottom: 1px solid var(--line); margin-top: 8px; align-items: flex-end; }
+.tabs button[role="tab"] { border: 0; background: transparent; padding: 10px 2px; color: var(--fg-2); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; display: inline-flex; gap: 6px; align-items: center; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
+.tabs .cnt { font-family: var(--font-mono); font-size: 11px; background: var(--surface-2); padding: 0 6px; border-radius: 999px; color: var(--fg-2); }
+.tabs .sp { margin-left: auto; display: flex; gap: 6px; align-items: center; padding-bottom: 6px; }
+.icbtn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--fg-2); }
+.icbtn[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
+
+/* overview layout */
+.ov { display: grid; grid-template-columns: 232px minmax(0, 1fr) 320px; }
+.ov.rail-off { grid-template-columns: 232px minmax(0, 1fr); }
+.ov.setup, .ov.setup.rail-off { grid-template-columns: minmax(0, 1fr) !important; }
+.ov.setup .main { padding-left: 0; padding-right: 0; }
+.sess { border-right: 1px solid var(--line); padding: 14px 14px 0 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; align-self: start; display: grid; gap: 2px; align-content: start; }
+.sess .sh { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 8px; font-size: 13px; }
+.sess .sg { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 12px 10px 4px; }
+.si { display: grid; gap: 2px; text-align: left; border: 0; background: transparent; padding: 7px 10px; border-radius: 8px; width: 100%; }
+.si:hover { background: var(--surface-2); }
+.si[aria-current="true"] { background: var(--accent-soft); }
+.si[aria-current="true"] .t { color: var(--accent); }
+.si .t { font-size: 13px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+.si .m { font-size: 11px; color: var(--fg-3); display: flex; align-items: center; gap: 5px; }
+.si .dot { width: 6px; height: 6px; border-radius: 50%; margin: 0; background: var(--fg-3); }
+.si .dot.auto { background: var(--accent); } .si .dot.trig { background: var(--warn); } .si .dot.me { background: var(--fg-2); } .si .dot.tr { background: var(--warn); } .si .dot.chart { background: var(--good); }
+.si.home { margin-bottom: 4px; }
+.si.new { animation: flash 1.4s ease; }
+.ov .main { min-width: 0; padding-top: 18px; padding-right: 24px; padding-left: 20px; display: grid; gap: 20px; align-content: start; position: relative; padding-bottom: 110px; }
+.ov.rail-off .main { padding-right: 0; }
+.ov .main > *, #ws > *, .thread > *, .msg .body > * { min-width: 0; }
+.ov .rail { border-left: 1px solid var(--line); padding: 14px 0 0 18px; align-self: start; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
+.ov.rail-off .rail { display: none; }
+@media (max-width: 1100px) { .ov, .ov.rail-off { grid-template-columns: minmax(0, 1fr) 320px; } .sess { display: none; } }
+@media (max-width: 900px) { .ov, .ov.rail-off { grid-template-columns: 1fr; } .ov .main { padding-right: 0; } .ov .rail { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; position: static; max-height: none; } }
+
+/* setup */
+.setup { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.setup .h { background: var(--surface-2); padding: 10px 16px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.setup .h .prog { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); font-weight: 400; }
+.setup .row { display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
+.setup .row b { font-weight: 600; display: block; } .setup .row span.d { color: var(--fg-2); font-size: 13px; }
+.setup .row .ico { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; color: var(--fg-3); font-size: 11px; }
+.setup .row.done .ico { background: var(--good); border-color: var(--good); color: #fff; }
+.setup .row.done b { color: var(--fg-3); text-decoration: line-through; }
+.setup .foot { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--fg-3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.setup.collapsed .row, .setup.collapsed .foot { display: none; }
+.setup.collapsed .h { background: var(--good-soft); color: var(--good); }
+.empty-ws { border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px 20px; text-align: center; color: var(--fg-3); font-size: 13px; }
+
+/* channel bar */
+.chbar { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.chg { display: inline-flex; align-items: stretch; position: relative; }
+.chb { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; color: var(--fg-2); font-weight: 500; font-size: 13px; white-space: nowrap; }
+.chb .ico { font-size: 12px; opacity: .8; }
+.chb .lv { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); background: var(--surface-2); padding: 0 5px; border-radius: 4px; }
+.chb:hover { background: var(--surface-2); color: var(--fg); }
+.chb[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.chb[aria-pressed="true"] .lv { background: rgba(127,127,127,.3); color: var(--bg); }
+.chb.cross[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.chb.addb { color: var(--accent); border: 1px dashed var(--line); }
+.chb.addb:hover { background: var(--accent-soft); }
+.chg .dd.wide { min-width: 360px; }
+.chg .dd .ddh { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 6px 10px 4px; }
+.chg .dd button small { display: block; font-size: 11px; color: var(--fg-3); font-weight: 400; }
+.chg .dd button b { font-weight: 600; }
+.chg .dd button.rm { color: var(--fg-3); border-top: 1px solid var(--line); border-radius: 0; margin-top: 4px; padding-top: 8px; font-size: 12px; }
+.chg .dd button.rm:hover { color: var(--crit); }
+.chg.flash .chb { animation: flash 1.4s ease; }
+.chg .chv { border: 0; background: transparent; color: var(--fg-3); padding: 0 8px 0 2px; border-radius: 999px; font-size: 12px; }
+.chg .chv:hover { color: var(--fg); }
+.chg .dd { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 6px; display: grid; gap: 2px; min-width: 200px; }
+.chg .dd button { border: 0; background: transparent; text-align: left; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.chg .dd button:hover { background: var(--surface-2); }
+.chg .dd .lv { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); padding: 0 5px; border-radius: 4px; }
+.chg .dd .lv.soon { color: var(--warn); background: var(--warn-soft); }
+/* workspace */
+.ws-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ws-h h2 { font-size: 15px; }
+.ws-h .r { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 5px 10px; font-size: 12px; color: var(--fg-2); white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(122px, 1fr)); gap: 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; text-align: left; cursor: pointer; transition: border-color .15s; }
+.kpi:hover, .kpi[aria-pressed="true"] { border-color: var(--accent); }
+.kpi .lbl { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+.kpi .val { font-family: var(--font-mono); font-size: 18px; font-weight: 500; display: flex; align-items: baseline; gap: 8px; }
+.kpi .val small { font-size: 11px; font-weight: 600; font-family: var(--font-ui); }
+.kpi .up { color: var(--good); } .kpi .down { color: var(--crit); } .kpi .flat { color: var(--fg-3); }
+.kpi svg { width: 100%; height: 26px; display: block; }
+.kpi polyline { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.kpi .ai { font-size: 11px; color: var(--fg-2); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.sugs { display: grid; gap: 8px; }
+.sug { padding: 10px 12px; display: grid; gap: 6px; align-content: start; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; transition: border-color .15s; }
+.sug:hover { border-color: var(--fg-3); }
+.rail .sug .why, .rail .sug .expand, .rail .sug .learn, .rail .sug .actions .btn:not(.primary) { display: none; }
+.rail .sug .detail { display: none !important; }
+.rail .sug h3 { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rail .sug .meta > :nth-child(n+3) { display: none; }
+.rail .sug .actions { display: flex; align-items: center; }
+.sug .more { font-size: 11px; color: var(--accent); margin-left: auto; }
+.drawer .sug { border: 0; padding: 0; cursor: default; gap: 10px; }
+.drawer .sug h3 { font-size: 16px; }
+.drawer .sug .more { display: none; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(500px, 100vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-lg); z-index: 20; display: grid; grid-template-rows: auto 1fr; padding-right: env(safe-area-inset-right, 0px); }
+.drawer .dh { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.drawer .dh .btn { margin-left: auto; }
+.drawer .db { padding: 16px; overflow-y: auto; }
+/* charts */
+.charts { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.ch { display: flex; align-items: flex-start; gap: 10px; }
+.ch b { font-weight: 600; font-size: 13px; } .ch small { display: block; color: var(--fg-3); font-size: 11px; }
+.ch .btn { margin-left: auto; flex: none; }
+.cbody { height: 300px; min-width: 0; }
+.cbody svg, .mchart svg { width: 100%; height: 100%; display: block; }
+.cnote { font-size: 12px; color: var(--fg-2); }
+.cs text { font-family: var(--font-mono); font-size: 10px; fill: var(--fg-3); }
+.cs .grid { stroke: var(--line); stroke-width: 1; }
+.cs .ann { stroke: var(--warn); stroke-dasharray: 4 3; stroke-width: 1.2; }
+.cs .annt { fill: var(--warn); font-weight: 600; }
+.heat { display: flex; flex-wrap: wrap; gap: 3px; height: 100%; align-content: flex-start; overflow: hidden; }
+.tile { border-radius: 4px; padding: 4px 6px; font-size: 11px; color: var(--fg); overflow: hidden; display: grid; align-content: start; min-width: 0; cursor: pointer; border: 1px solid transparent; }
+.tile:hover, .tile.hl { border-color: var(--fg); }
+.tile b { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile small { font-family: var(--font-mono); font-size: 10px; }
+.modal { position: fixed; inset: 0; background: rgba(10,10,8,.45); z-index: 25; display: grid; place-items: center; padding: 16px; }
+.mbox { background: var(--bg); border-radius: 16px; width: min(1320px, 96vw); height: min(840px, 92vh); display: grid; grid-template-rows: auto 1fr; overflow: hidden; box-shadow: var(--shadow-lg); }
+.mh { padding: 12px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; background: var(--surface); }
+.mh b { font-size: 15px; } .mh small { display: block; color: var(--fg-3); font-size: 12px; }
+.mh .r { margin-left: auto; display: flex; gap: 6px; }
+.mgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 0; height: 100%; }
+.mmain { padding: 14px 18px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; min-width: 0; min-height: 0; }
+.mchart { min-height: 0; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; }
+.mlegend { font-size: 12px; color: var(--fg-2); display: flex; gap: 14px; flex-wrap: wrap; }
+.mlegend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.mParams .param select, .params .param select { border: 0; background: transparent; font: inherit; color: var(--fg); font-weight: 500; outline: none; }
+.mai { border-left: 1px solid var(--line); display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; background: var(--surface); }
+.aih { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.aichat { overflow-y: auto; padding: 12px 14px; display: grid; gap: 10px; align-content: start; font-size: 13px; }
+.aichat .q { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; justify-self: end; max-width: 92%; }
+.aichat .a { display: grid; gap: 6px; color: var(--fg); }
+.aichat .a .act { display: flex; gap: 6px; flex-wrap: wrap; }
+.aichips { padding: 0 14px 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.aichips button { border: 1px dashed var(--line); background: transparent; border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--fg-2); text-align: left; }
+.aichips button:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
+.mai .reply { margin: 0 14px 14px; }
+@media (max-width: 900px) { .mgrid { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; } .mai { border-left: 0; border-top: 1px solid var(--line); max-height: 40%; } .mbox { height: 94vh; } }
+.sug h3 { font-size: 14px; }
+.done-banner { display: flex; align-items: center; gap: 12px; background: var(--good-soft); color: var(--good); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; transition: opacity .6s; }
+.done-banner > span:first-child { width: 22px; height: 22px; border-radius: 50%; background: var(--good); color: #fff; display: grid; place-items: center; font-size: 12px; flex: none; }
+.done-banner div { color: var(--fg); flex: 1; }
+.done-banner.fade { opacity: 0; }
+.guide { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-top: 18px; }
+.guide .step { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 600; }
+.guide .r { margin-left: auto; display: flex; gap: 6px; }
+.srv.hl { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* projects home */
+.home-h { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding-block: 10px 18px; }
+.home-h .r { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.pcard { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; align-content: start; transition: border-color .15s, box-shadow .15s; }
+.pcard:hover { border-color: var(--fg-3); box-shadow: var(--shadow); }
+.pcard.new { border-style: dashed; background: transparent; }
+.pcard .ph { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; }
+.pcard .ph .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+.pcard .ph b { font-weight: 600; display: block; } .pcard .ph small { color: var(--fg-3); font-size: 12px; }
+.pcard .pk { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pcard .pk span { font-family: var(--font-mono); font-size: 14px; } .pcard .pk em { display: block; font-style: normal; font-family: var(--font-ui); font-size: 11px; color: var(--fg-3); }
+.pcard .pf { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--fg-3); }
+.pcard .pl { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--fg-2); border-top: 1px solid var(--line); padding-top: 10px; }
+.pcard .pl .av { width: 20px; height: 20px; font-size: 9px; }
+.ssgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.ss { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 3px; transition: border-color .15s; }
+.ss:hover { border-color: var(--fg-3); }
+.ss .k { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.ss.g .k { color: var(--warn); }
+.ss b { font-weight: 600; } .ss small { color: var(--fg-2); font-size: 12px; } .ss .u { font-size: 11px; color: var(--fg-3); margin-top: 4px; }
+.pcard .tpl { display: flex; flex-wrap: wrap; gap: 6px; } .pcard .tpl span { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--fg-2); }
+.sug .why { color: var(--fg-2); font-size: 13px; max-width: 72ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--fg-2); }
+.pill { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 0; font-family: inherit; }
+.pill.good { background: var(--good-soft); color: var(--good); } .pill.warn { background: var(--warn-soft); color: var(--warn); } .pill.crit { background: var(--crit-soft); color: var(--crit); } .pill.neutral { background: var(--surface-2); color: var(--fg-2); } .pill.accent { background: var(--accent-soft); color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.actions .learn { margin-left: auto; font-size: 12px; color: var(--fg-2); display: inline-flex; gap: 6px; align-items: center; }
+.actions .learn input { accent-color: var(--accent); }
+.sug.done { opacity: .65; } .sug.done .actions { display: none; } .sug.done .result { display: flex; }
+.result { display: none; gap: 8px; align-items: center; font-size: 13px; color: var(--good); font-weight: 500; }
+.expand { border: 0; background: transparent; color: var(--accent); font-weight: 500; padding: 0; font-size: 13px; text-align: left; }
+.detail { background: var(--surface-2); border-radius: 8px; padding: 12px; display: grid; gap: 6px; font-size: 13px; }
+.detail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.detail li { display: grid; grid-template-columns: auto 1fr; gap: 10px; }
+.tool { font-family: var(--font-mono); font-size: 11px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 760px; }
+th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-3); padding: 9px 12px; background: var(--surface-2); font-weight: 600; }
+td { padding: 9px 12px; border-top: 1px solid var(--line); vertical-align: middle; }
+td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+tr:hover td { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+td .nm { font-weight: 500; }
+td .sub { display: block; font-size: 11px; color: var(--fg-3); }
+.pace { display: inline-grid; grid-template-columns: 56px auto; gap: 6px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+.pace i { display: block; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.pace i::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--accent); }
+.pace.hot i::after { background: var(--crit); }
+td .ainote { font-size: 12px; color: var(--fg-2); display: inline-flex; gap: 6px; align-items: center; }
+td .ainote::before { content: "✦"; color: var(--accent); font-size: 10px; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.dot.on { background: var(--good); } .dot.paused { background: var(--fg-3); } .dot.warn { background: var(--warn); }
+
+.hiddenSug { font-size: 12px; color: var(--fg-3); padding: 4px 2px; }
+.hiddenSug button { background: transparent; border: 0; color: var(--accent); text-decoration: underline; padding: 0; font-size: 12px; }
+.insight { padding: 4px 0 14px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.insight .ih { display: flex; align-items: center; gap: 8px; font-size: 13px; } .insight .ih .sub { margin-left: auto; font-size: 11px; color: var(--fg-3); }
+.insight p { font-size: 13px; color: var(--fg); }
+.insight .hl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.insight .hl li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; font-size: 12px; color: var(--fg-2); align-items: start; }
+.insight .hl li span { font-weight: 700; } .insight .hl .good span { color: var(--good); } .insight .hl .bad span { color: var(--crit); } .insight .hl .wait span { color: var(--warn); }
+/* rail accordion */
+.acc { border-bottom: 1px solid var(--line); }
+.acc > button { width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 8px; padding: 12px 0; font-weight: 600; font-size: 13px; text-align: left; }
+.acc > button .chev { margin-left: auto; color: var(--fg-3); transition: transform .15s; font-size: 12px; }
+.acc[open] > button .chev { transform: rotate(90deg); }
+.acc .b { display: none; padding: 0 0 14px; font-size: 13px; color: var(--fg-2); gap: 10px; }
+.acc[open] .b { display: grid; }
+.acc .sub { font-size: 11px; color: var(--fg-3); font-weight: 400; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; font-size: 12px; background: var(--surface); color: var(--fg); }
+.chip .lv { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); padding: 0 5px; border-radius: 4px; }
+.chip .lv.soon { color: var(--warn); background: var(--warn-soft); }
+.act-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.act-list li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; }
+.av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; background: var(--surface-2); color: var(--fg-2); }
+.av.me { background: var(--accent); color: var(--accent-fg); } .av.ai { background: var(--accent-soft); color: var(--accent); border-radius: 6px; } .av.tr { background: var(--warn-soft); color: var(--warn); }
+.act-list small { display: block; color: var(--fg-3); font-size: 11px; }
+.rail ul.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rail ul.plain li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; }
+.rail ul.plain small { display: block; color: var(--fg-3); font-size: 11px; }
+.rail .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); white-space: nowrap; }
+.members { display: flex; gap: -4px; align-items: center; }
+.members .av { border: 2px solid var(--bg); margin-right: -6px; }
+
+/* floating input */
+.ask { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; left: 16px; right: 16px; }
+.ask .box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; }
+.ask .ctx { display: flex; gap: 8px; align-items: center; padding: 8px 14px 0; font-size: 11px; color: var(--fg-3); }
+.ask .ctx .pill { font-size: 10px; }
+.ask textarea { width: 100%; border: 0; resize: none; background: transparent; color: var(--fg); font: inherit; font-size: 15px; padding: 8px 14px 4px; min-height: 44px; outline: none; }
+.ask textarea::placeholder { color: var(--fg-3); transition: opacity .3s; }
+.ask textarea.fade::placeholder { opacity: 0; }
+.ask .bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px 10px; flex-wrap: wrap; }
+.ask .send { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-size: 16px; }
+.ask .hint { font-size: 12px; color: var(--fg-3); }
+.ask kbd { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--fg-3); }
+
+/* thread */
+.thread { display: grid; gap: 16px; padding-top: 18px; padding-bottom: 110px; max-width: 900px; }
+.back { display: inline-flex; gap: 6px; align-items: center; color: var(--fg-2); background: transparent; border: 0; padding: 0; font-size: 13px; }
+.msg { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
+.msg .av { width: 28px; height: 28px; font-size: 11px; }
+.msg .body { min-width: 0; display: grid; gap: 10px; }
+.msg .who { font-size: 12px; color: var(--fg-3); } .msg .who b { color: var(--fg); font-weight: 600; }
+.msg.me .text { background: var(--surface-2); border-radius: 12px; padding: 10px 14px; display: inline-block; }
+.step { padding: 12px 14px; display: grid; gap: 8px; opacity: .35; transition: opacity .25s; }
+.step.on { opacity: 1; }
+.step-h { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 13px; }
+.step-h .status { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--fg-3); }
+.params { display: flex; flex-wrap: wrap; gap: 6px; }
+.param { display: inline-flex; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 12px; background: var(--bg); }
+.param .k { color: var(--fg-3); }
+.plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.plan li { display: grid; grid-template-columns: 16px 1fr; gap: 10px; align-items: baseline; }
+.plan .st { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--line); display: inline-block; }
+.plan li.doing .st { border-color: var(--accent); border-top-color: transparent; animation: spin .8s linear infinite; }
+.plan li.ok .st { background: var(--good); border-color: var(--good); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.tiles .t { padding: 8px 10px; background: var(--surface-2); border-radius: 8px; display: grid; gap: 2px; }
+.tiles .t .lbl { font-size: 11px; color: var(--fg-3); } .tiles .t .val { font-family: var(--font-mono); font-size: 16px; }
+tr.ex td { color: var(--fg-3); }
+
+/* scheduled tasks */
+.two-col { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; padding-top: 18px; align-items: start; }
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+.tlist { display: grid; }
+.tlist .h { padding: 10px 14px 6px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; display: flex; align-items: center; }
+.tlist .h .a { margin-left: auto; }
+.tlist > .ti { cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; text-align: left; border: 0; background: transparent; padding: 10px 14px; border-left: 3px solid transparent; align-items: center; }
+.tlist > .ti:hover { background: var(--surface-2); }
+.tlist > .ti[aria-current="true"] { border-left-color: var(--accent); background: var(--accent-soft); }
+.tlist .t { font-weight: 500; font-size: 13px; }
+.tlist .s { font-size: 12px; color: var(--fg-3); grid-column: 1 / -1; }
+.toggle { width: 34px; height: 20px; border-radius: 999px; background: var(--fg-3); position: relative; border: 0; flex: none; }
+.toggle[aria-pressed="true"] { background: var(--accent); }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left .15s; }
+.toggle[aria-pressed="true"]::after { left: 17px; }
+.tdetail { display: grid; gap: 14px; }
+.tdetail .hd { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.tdetail .hd h2 { font-size: 17px; }
+.tdetail .hd .d { color: var(--fg-2); font-size: 13px; }
+.tdetail .hd .r { margin-left: auto; display: flex; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.facts .f { padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 2px; font-size: 13px; }
+.facts .f .lbl { font-size: 11px; color: var(--fg-3); }
+.runs { display: flex; gap: 6px; flex-wrap: wrap; }
+.runs button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 4px 10px; font-size: 12px; color: var(--fg-2); display: inline-flex; gap: 6px; align-items: center; }
+.runs button[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+.log { display: grid; }
+.log .l { display: grid; grid-template-columns: 70px 110px 1fr; gap: 12px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 13px; align-items: baseline; }
+.log .l:first-child { border-top: 0; }
+.log .ts { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+.log .src { font-family: var(--font-mono); font-size: 11px; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; justify-self: start; white-space: nowrap; }
+.log .src.sys { color: var(--fg-2); background: var(--surface-2); }
+.log .src.esc { color: var(--warn); background: var(--warn-soft); }
+.log .src.ok { color: var(--good); background: var(--good-soft); }
+.log .msgt small { display: block; color: var(--fg-3); font-size: 12px; }
+.log .msgt .lk { color: var(--accent); background: transparent; border: 0; padding: 0; font-size: 12px; text-decoration: underline; }
+@media (max-width: 600px) { .log .l { grid-template-columns: 1fr; gap: 2px; } }
+
+/* files */
+.files { padding-top: 18px; display: grid; gap: 14px; }
+.ftop { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ftop .r { margin-left: auto; display: flex; gap: 6px; }
+.fgrid { display: grid; }
+.frow { display: grid; grid-template-columns: 32px minmax(0, 1fr) 140px 110px 90px auto; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); align-items: center; font-size: 13px; }
+.frow:first-child { border-top: 0; }
+.frow.head { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; background: var(--surface-2); border-radius: var(--radius) var(--radius) 0 0; }
+.frow .ft { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 10px; font-weight: 600; background: var(--surface-2); color: var(--fg-2); }
+.frow .ft.ai { background: var(--accent-soft); color: var(--accent); }
+.frow .nm { font-weight: 500; } .frow small { display: block; color: var(--fg-3); font-size: 11px; }
+.frow .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+@media (max-width: 760px) { .frow { grid-template-columns: 32px 1fr auto; } .frow > :nth-child(3), .frow > :nth-child(4), .frow > :nth-child(5) { display: none; } }
+
+/* settings */
+.settings { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-top: 18px; }
+@media (max-width: 760px) { .settings { grid-template-columns: 1fr; gap: 16px; } }
+.snav { display: grid; gap: 2px; align-content: start; }
+.snav button { border: 0; background: transparent; text-align: left; padding: 8px 12px; border-radius: 8px; color: var(--fg-2); font-weight: 500; }
+.snav button[aria-current="true"] { background: var(--surface-2); color: var(--fg); }
+.spane { max-width: 780px; display: grid; gap: 28px; }
+.sec h3 { font-size: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.sec h3 .a { margin-left: auto; }
+.sec p.d { color: var(--fg-2); font-size: 13px; }
+textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); font: inherit; padding: 12px; min-height: 110px; resize: vertical; }
+.rows { display: grid; }
+.row2 { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; font-size: 13px; }
+.row2:first-child { border-top: 0; }
+.row2 small { display: block; color: var(--fg-3); font-size: 12px; }
+.row2 .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); white-space: nowrap; }
+.seg3 { display: inline-grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg3 button { border: 0; background: transparent; padding: 5px 9px; font-size: 12px; color: var(--fg-2); white-space: nowrap; }
+.seg3 button + button { border-left: 1px solid var(--line); }
+.seg3 button[aria-pressed="true"] { background: var(--fg); color: var(--bg); font-weight: 600; }
+.mem { display: grid; gap: 8px; }
+.mem .m { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; font-size: 13px; }
+.mem .m small { display: block; color: var(--fg-3); font-size: 12px; margin-top: 2px; }
+.mem .m .forget { font-size: 12px; color: var(--fg-3); background: transparent; border: 0; text-decoration: underline; }
+.mem .m.gone { opacity: .4; text-decoration: line-through; }
+.mcp { display: grid; gap: 10px; }
+.mcp .mg { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+.mcp .mg .lv { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); padding: 0 5px; border-radius: 4px; text-transform: none; letter-spacing: 0; }
+.mcp .srv { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; }
+.mcp .srv .h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mcp .srv .h b { font-weight: 600; }
+.mcp .srv .h .nm { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+.mcp .srv .h .r { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.mcp .tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.mcp .tools span { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--fg-2); }
+.mcp .tools span.w { border-color: var(--warn); color: var(--warn); }
+.flash { animation: flash 1.4s ease; } @keyframes flash { 0% { background: var(--accent-soft); } 100% { background: transparent; } }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 13px; box-shadow: var(--shadow); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 30; max-width: calc(100vw - 32px); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="shell" id="home">
+  <div class="top">
+    <span style="font-weight:600;color:var(--fg)">Projects</span>
+    <div class="right"><button class="btn sm quiet">Usage</button><button class="btn sm primary" id="newProject">+ New project</button><span class="av me" style="width:28px;height:28px;font-size:11px">Z</span></div>
+  </div>
+  <div class="home-h">
+    <div><h1 style="font-size:22px">Your projects</h1><p style="color:var(--fg-2);margin-top:4px">A project is one agent with its own context, memory, skills and scheduled tasks — usually one per brand line or client account.</p></div>
+    <div class="r"><span class="seg" id="homeSeg"><button aria-pressed="true">All</button><button aria-pressed="false">Mine</button><button aria-pressed="false">Shared with me</button><button aria-pressed="false">Archived</button></span><button class="btn sm">Sort: Needs attention ⌄</button></div>
+  </div>
+  <div class="pgrid" id="pgrid">
+    <button class="pcard" data-open-project="kitchen">
+      <div class="ph"><span class="ic">K</span><div><b>Kitchen Brand Line</b><small>Retail · Programmatic · Social · Paid search · Agentic</small></div><span class="pill warn" id="homeKitchenPill">6 waiting</span></div>
+      <div class="pk"><span><em>Spend 7d</em>$183.2K</span><span><em>ROAS</em>4.10</span><span><em>ACOS</em>24.4%</span></div>
+      <div class="pf"><span class="members"><span class="av me">Z</span><span class="av tr">T</span></span><span>5 tasks · last run today 11:00</span></div>
+      <div class="pl"><span class="av ai">A</span>Moved $46 of unspent budget to afternoon peaks · 11:00</div>
+    </button>
+    <button class="pcard" data-open-project="other">
+      <div class="ph"><span class="ic" style="background:var(--warn-soft);color:var(--warn)">P</span><div><b>Personal Care Brand Line</b><small>Amazon US · Amazon CA</small></div><span class="pill good">All clear</span></div>
+      <div class="pk"><span><em>Spend 7d</em>$96.4K</span><span><em>ROAS</em>3.62</span><span><em>ACOS</em>27.6%</span></div>
+      <div class="pf"><span class="members"><span class="av me">Z</span><span class="av">M</span><span class="av">J</span></span><span>3 tasks · last run today 06:00</span></div>
+      <div class="pl"><span class="av ai">A</span>Monday briefing: nothing needs a decision · 06:00</div>
+    </button>
+    <button class="pcard" data-open-project="other">
+      <div class="ph"><span class="ic" style="background:var(--crit-soft);color:var(--crit)">H</span><div><b>Holiday Gifting 2026</b><small>Amazon US · Walmart · Instacart · campaign launch</small></div><span class="pill crit">Setup 1/3</span></div>
+      <div class="pk"><span><em>Spend 7d</em>—</span><span><em>ROAS</em>—</span><span><em>Launch</em>Nov 1</span></div>
+      <div class="pf"><span class="members"><span class="av tr">T</span><span class="av me">Z</span></span><span>0 tasks · created by Tracy</span></div>
+      <div class="pl"><span class="av tr">T</span>Tracy invited you as Editor · yesterday</div>
+    </button>
+    <button class="pcard" data-open-project="other">
+      <div class="ph"><span class="ic" style="background:var(--surface-2);color:var(--fg-2)">B</span><div><b>Brand X · Walmart (client)</b><small>Walmart · shared from Agency workspace</small></div><span class="pill neutral">Read only</span></div>
+      <div class="pk"><span><em>Spend 7d</em>$41.0K</span><span><em>ROAS</em>2.95</span><span><em>ACOS</em>33.9%</span></div>
+      <div class="pf"><span class="members"><span class="av">R</span><span class="av">S</span><span class="av me">Z</span></span><span>2 tasks · last run Oct 24</span></div>
+      <div class="pl"><span class="av ai">A</span>Weekly report saved to Files · Oct 24</div>
+    </button>
+    <button class="pcard new" id="newProject2">
+      <div class="ph"><span class="ic" style="background:transparent;border:1px dashed var(--line);color:var(--fg-3)">+</span><div><b>New project</b><small>Start from a template</small></div></div>
+      <div class="tpl"><span>Brand line</span><span>Client account</span><span>Campaign launch</span><span>Blank</span></div>
+    </button>
+  </div>
+  <div style="margin-top:22px">
+    <div class="ws-h" style="margin-bottom:10px"><h2 style="font-size:15px">Shared services</h2><span style="font-size:12px;color:var(--fg-3)">Account-wide libraries and guardrails · projects reference them, agents use them</span><div class="r"><button class="btn sm quiet">Open in Prism ↗</button></div></div>
+    <div class="ssgrid">
+      <button class="ss"><span class="k">Assets</span><b>Creative Center</b><small>1,284 assets · 38 tagged Kitchen Q4</small><span class="u">Used in 3 projects · agent matched 112 times</span></button>
+      <button class="ss"><span class="k">Assets</span><b>Audience Center</b><small>46 segments · 9 cross-platform</small><span class="u">Used in 4 projects · agent proposed 2 new</span></button>
+      <button class="ss"><span class="k">Assets</span><b>Deal Center</b><small>12 PMP deals · Roku, ADSP, Walmart DSP</small><span class="u">Used in 2 projects</span></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>Domain Preference</b><small>Allow 212 · block 38 domains</small><span class="u">Enforced on every programmatic action</span></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>GEO Control</b><small>US · 4 state exclusions for CTV</small><span class="u">Enforced on every action</span></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>Brand Safety</b><small>GARM floor: High · 4 categories excluded</small><span class="u">Enforced · 0 overrides allowed</span></button>
+    </div>
+  </div>
+  <div class="card" style="padding:14px 16px;display:grid;gap:8px;margin-top:8px">
+    <div style="display:flex;align-items:center;gap:10px"><h2 style="font-size:14px">Across all projects</h2><span style="font-size:12px;color:var(--fg-3)">today</span></div>
+    <ul class="act-list" style="grid-template-columns:1fr">
+      <li><span class="av ai">A</span><span>4 suggestions waiting in <b>Kitchen Brand Line</b> — 1 above your approval limit<small>06:00</small></span></li>
+      <li><span class="av ai">A</span><span>Walmart write access is rolling out; <b>Kitchen</b> and <b>Brand X</b> will be able to apply change lists directly<small>Platform update</small></span></li>
+      <li><span class="av tr">T</span><span>Tracy created <b>Holiday Gifting 2026</b> and invited you<small>Yesterday</small></span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="shell" id="project" hidden>
+  <div class="top">
+    <button class="btn sm quiet" id="toHome" style="padding-left:0">Projects</button><span>›</span><button class="btn sm quiet" id="projSwitch">Kitchen Brand Line ⌄</button>
+    <div class="right"><span class="btn sm quiet" id="resetSetup">Reset demo</span><button class="btn sm quiet">Usage</button><button class="btn sm dark">Share</button></div>
+  </div>
+  <div class="proj"><div class="ic">K</div><div><h1>Kitchen Brand Line</h1><small>5 channels · 12 platforms · 2 members · Concept mockup, sample data</small></div></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-tab="tasks">Scheduled tasks <span class="cnt">5</span></button>
+    <button role="tab" aria-selected="false" data-tab="files">Files <span class="cnt">7</span></button>
+    <button role="tab" aria-selected="false" data-tab="settings">Settings</button>
+    <div class="sp"><button class="icbtn" title="Search">⌕</button><button class="icbtn" id="railToggle" aria-pressed="true" title="Toggle side panel">▥</button></div>
+  </div>
+
+  <!-- ================= OVERVIEW ================= -->
+  <section data-panel="overview">
+    <div class="ov" id="ov">
+      <aside class="sess" id="sess">
+        <div class="sh"><b>Sessions</b><button class="btn sm quiet" id="newSess" title="New session">+ New</button></div>
+        <button class="si home" id="sessHome" aria-current="true"><span class="t">Overview</span><span class="m">KPIs · charts · campaigns</span></button>
+        <div class="sg">Today</div>
+        <div id="sessToday"></div>
+        <button class="si" data-sess="brief"><span class="t">Monday briefing</span><span class="m"><i class="dot auto"></i>Scheduled · 06:00</span></button>
+        <button class="si" data-sess="pacing"><span class="t">Budget pacing</span><span class="m"><i class="dot auto"></i>Scheduled · 11:00</span></button>
+        <div class="sg">Yesterday</div>
+        <button class="si" data-sess="walmart"><span class="t">Walmart Air Fryer – Brand: ROAS −38%</span><span class="m"><i class="dot trig"></i>Triggered · 20:14</span></button>
+        <div class="sg">Earlier</div>
+        <button class="si" data-sess="tracy"><span class="t">Send negative keyword results to Tracy</span><span class="m"><i class="dot me"></i>You · Oct 23</span></button>
+        <button class="si" data-sess="q4"><span class="t">Q4 promo budget split</span><span class="m"><i class="dot tr"></i>Tracy · Oct 19 · shared</span></button>
+        <button class="si" data-sess="neg"><span class="t">Negative keyword cleanup</span><span class="m"><i class="dot auto"></i>Scheduled · Oct 20</span></button>
+      </aside>
+      <div class="main" id="ovMain">
+
+        <div class="setup" id="setup">
+          <div class="h"><span id="setupTitle">Set up your project</span><span class="prog" id="setupProg">0 / 3</span></div>
+          <div class="row" data-step="ctx"><span class="ico">1</span><div><b>Add context</b><span class="d">Connect ad platforms, upload strategy docs and write brand instructions so every session starts informed.</span></div><button class="btn sm" data-do="ctx">Add context →</button></div>
+          <div class="row" data-step="team"><span class="ico">2</span><div><b>Invite team &amp; set roles</b><span class="d">Owners approve agent actions; editors can start sessions; viewers see results.</span></div><button class="btn sm" data-do="team">Invite →</button></div>
+          <div class="row" data-step="slack"><span class="ico">3</span><div><b>Connect to Slack</b><span class="d">Mention @Pacvue in a channel to hand off tasks. Briefings and alerts post there too.</span></div><button class="btn sm" data-do="slack">Connect →</button></div>
+          <div class="foot"><span>The workspace appears once setup is complete.</span><button class="btn sm quiet" id="skipSetup">Skip — preview the workspace →</button></div>
+        </div>
+        <div class="done-banner" id="doneBanner" hidden><span>✓</span><div><b>Setup complete.</b> The agent is reading your context and will post its first briefing tomorrow at 06:00. Meanwhile, here's the workspace.</div><button class="btn sm quiet" id="dismissBanner">Dismiss</button></div>
+
+        <div class="empty-ws" id="emptyWs">Campaigns, KPIs and agent suggestions appear here after setup.</div>
+
+        <div class="invite" id="invite" hidden>
+          <div class="card" style="padding:16px;display:grid;gap:12px;max-width:560px">
+            <h3 style="font-size:15px">Invite team &amp; set roles</h3>
+            <div class="rows">
+              <div class="row2"><span>zoe.zheng@pacvue.com<small>You</small></span><span class="pill accent">Owner</span></div>
+              <div class="row2"><span><input id="invEmail" value="tracy@pacvue.com" style="border:0;background:transparent;font:inherit;color:var(--fg);width:100%;outline:none"><small>Editors can start sessions and approve within their limits</small></span><span class="seg"><button aria-pressed="false">Owner</button><button aria-pressed="true">Editor</button><button aria-pressed="false">Viewer</button></span></div>
+            </div>
+            <div class="actions"><button class="btn sm primary" id="invSend">Send invite &amp; continue</button><button class="btn sm quiet" id="invCancel">Cancel</button></div>
+          </div>
+        </div>
+
+        <div id="ws" hidden style="display:grid;gap:20px">
+          <div class="chbar" id="chbar">
+            <button class="chb cross" data-ch="cross" aria-pressed="true"><span class="ico">⊕</span>Cross-channel</button>
+            <div class="chg" data-ch="retail"><button class="chb" data-ch="retail" aria-pressed="false"><span class="ico">🛒</span>Retail<span class="lv">Acts</span></button><button class="chv" data-dd="retail" aria-label="Platforms">⌄</button>
+              <div class="dd" hidden><button data-plat="all">All Retail</button><button data-plat="amazon">Amazon <span class="lv">Acts</span></button><button data-plat="walmart">Walmart <span class="lv soon">Suggests · acting soon</span></button><button data-plat="instacart">Instacart <span class="lv">Suggests</span></button><button data-plat="target">Target <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="prog"><button class="chb" data-ch="prog" aria-pressed="false"><span class="ico">▭</span>Programmatic<span class="lv">Acts</span></button><button class="chv" data-dd="prog" aria-label="Platforms">⌄</button>
+              <div class="dd" hidden><button data-plat="all">All Programmatic</button><button data-plat="adsp">Amazon DSP <span class="lv">Acts</span></button><button data-plat="walmartdsp">Walmart DSP <span class="lv">Suggests</span></button><button data-plat="roku">Roku <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="social" hidden><button class="chb" data-ch="social" aria-pressed="false"><span class="ico">☺</span>Social &amp; Discovery<span class="lv">Suggests</span></button><button class="chv" data-dd="social" aria-label="Platforms">⌄</button>
+              <div class="dd" hidden><button data-plat="all">All Social</button><button data-plat="tiktok">TikTok <span class="lv">Suggests</span></button><button data-plat="meta">Meta <span class="lv">Suggests</span></button><button data-plat="pinterest">Pinterest <span class="lv">Reads</span></button><button data-plat="reddit">Reddit <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="search" hidden><button class="chb" data-ch="search" aria-pressed="false"><span class="ico">⌕</span>Paid search<span class="lv">Suggests</span></button><button class="chv" data-dd="search" aria-label="Platforms">⌄</button>
+              <div class="dd" hidden><button data-plat="all">All Paid search</button><button data-plat="google">Google Ads <span class="lv">Suggests</span></button><button data-plat="bing">Bing Ads <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="agentic" hidden><button class="chb" data-ch="agentic" aria-pressed="false"><span class="ico">✦</span>Agentic<span class="lv">Reads</span></button><button class="chv" data-dd="agentic" aria-label="Platforms">⌄</button>
+              <div class="dd" hidden><button data-plat="all">All Agentic</button><button data-plat="chatgpt">ChatGPT <span class="lv">Reads</span></button><button data-plat="perplexity">Perplexity <span class="lv soon">soon</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg add" id="addChg"><button class="chb addb" id="addCh">+ Add channel</button>
+              <div class="dd wide" id="addDd" hidden>
+                <p class="ddh">Channels not on your bar</p>
+                <button data-add="social"><span><b>Social &amp; Discovery</b><small>TikTok, Meta, Pinterest, Reddit · agent suggests</small></span><span class="lv">Add</span></button>
+                <button data-add="search"><span><b>Paid search</b><small>Google Ads, Bing Ads · agent suggests</small></span><span class="lv">Add</span></button>
+                <button data-add="agentic"><span><b>Agentic</b><small>ChatGPT, Perplexity (soon) · agent reads</small></span><span class="lv">Add</span></button>
+                <button data-add="retail"><span><b>Retail</b><small>Amazon, Walmart, Instacart, Target · agent acts</small></span><span class="lv">Add</span></button>
+                <button data-add="prog"><span><b>Programmatic</b><small>Amazon DSP, Walmart DSP, Roku · agent acts</small></span><span class="lv">Add</span></button>
+                <p class="ddh" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px">Cross-channel always rolls up the channels on your bar.</p>
+              </div></div>
+          </div>
+          <div class="ws-h"><h2 id="perfTitle">Performance · Cross-channel</h2><span style="font-size:12px;color:var(--fg-3)">Last 7 days vs. previous 7</span>
+            <div class="r"><span class="tag" id="tierTag">Cross-channel rolls up Retail + Programmatic · add channels to widen it</span><button class="btn sm">Oct 19 – 25 ⌄</button></div>
+          </div>
+          <div class="kpis" id="kpis"></div>
+
+          <div id="chartsSection">
+            <div class="ws-h" style="margin-bottom:10px"><h2>Charts</h2><span style="font-size:12px;color:var(--fg-3)">Agent-annotated · click Expand to adjust and ask</span><div class="r"><button class="btn sm quiet" id="addChart">+ Add chart</button></div></div>
+            <div class="charts">
+              <div class="chart-card" data-chart="trend"><div class="ch"><div><b>Spend &amp; sales</b><small>Daily · last 14 days · all channels · break down by channel in Expand</small></div><button class="btn sm quiet" data-expand="trend">Expand ⤢</button></div><div class="cbody" id="c-trend"></div><div class="cnote">✦ Spend stepped up on Oct 20 after the pacing rule change; sales followed with a 1-day lag.</div></div>
+              <div class="chart-card" data-chart="heat"><div class="ch"><div><b>Campaign heatmap</b><small>Size = spend 7d · color = ROAS vs previous 7d</small></div><button class="btn sm quiet" data-expand="heat">Expand ⤢</button></div><div class="cbody" id="c-heat"></div><div class="cnote">✦ Walmart Air Fryer – Brand is the one red tile that matters; the rest of the red is small spend.</div></div>
+              <div class="chart-card" data-chart="pace"><div class="ch"><div><b>Budget pacing today</b><small>Cumulative spend vs. even pace · Air Fryer – Exact</small></div><button class="btn sm quiet" data-expand="pace">Expand ⤢</button></div><div class="cbody" id="c-pace"></div><div class="cnote">✦ Exhausted at 11:40 for the 5th day running. Raise suggested (waiting for you).</div></div>
+              <div class="chart-card" data-chart="sov"><div class="ch"><div><b>Share of voice · "air fryer"</b><small>Top-of-search · Amazon US · 7 days</small></div><button class="btn sm quiet" data-expand="sov">Expand ⤢</button></div><div class="cbody" id="c-sov"></div><div class="cnote">✦ You lost 3 pts to Cosori this week, mostly in 18:00–22:00.</div></div>
+            </div>
+          </div>
+
+          <div id="campSection">
+            <div class="ws-h" style="margin-bottom:10px"><h2 id="campTitle">Campaigns</h2><span style="font-size:12px;color:var(--fg-3)" id="campCount">24 active · showing top 8 by spend</span><div class="r"><button class="btn sm">Filter</button><button class="btn sm">Columns</button><button class="btn sm quiet">View all →</button></div></div>
+            <div class="tbl-wrap"><table id="campTbl">
+              <thead><tr><th>Campaign</th><th>Status</th><th class="n">Spend 7d</th><th class="n">Sales 7d</th><th class="n">ROAS</th><th class="n">CPC</th><th>Budget pacing</th><th>Agent note</th></tr></thead>
+              <tbody>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Air Fryer – Exact</span><span class="sub">Amazon · SP · Exact</span></td><td><span class="dot on"></span>Active</td><td class="n">$3,240</td><td class="n">$16,850</td><td class="n">5.2</td><td class="n">$1.08</td><td><span class="pace hot" style="--p:100%"><i></i>out 11:40</span></td><td><span class="ainote">Budget raise suggested</span></td></tr>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Air Fryer – Auto</span><span class="sub">Amazon · SP · Auto</span></td><td><span class="dot on"></span>Active</td><td class="n">$2,910</td><td class="n">$9,020</td><td class="n">3.1</td><td class="n">$0.94</td><td><span class="pace" style="--p:72%"><i></i>on pace</span></td><td></td></tr>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Blender Pro – Broad</span><span class="sub">Amazon · SP · Broad</span></td><td><span class="dot on"></span>Active</td><td class="n">$2,480</td><td class="n">$10,900</td><td class="n">4.4</td><td class="n">$1.31</td><td><span class="pace" style="--p:68%"><i></i>on pace</span></td><td><span class="ainote">Pacing moved $150 to 14–18h today</span></td></tr>
+                <tr data-plat="walmart" data-ch="retail"><td><span class="nm">Air Fryer – Brand</span><span class="sub">Walmart · SP · Brand terms</span></td><td><span class="dot warn"></span>Active</td><td class="n">$2,120</td><td class="n">$6,150</td><td class="n">2.9</td><td class="n">$1.86</td><td><span class="pace" style="--p:61%"><i></i>on pace</span></td><td><span class="ainote">ROAS −38% · change list ready</span></td></tr>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Toaster 4S – Exact</span><span class="sub">Amazon · SP · Exact</span></td><td><span class="dot on"></span>Active</td><td class="n">$1,760</td><td class="n">$6,860</td><td class="n">3.9</td><td class="n">$1.12</td><td><span class="pace" style="--p:80%"><i></i>out ~17:30</span></td><td><span class="ainote">Pacing moved $180 to 16–20h today</span></td></tr>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Blender – Broad (legacy)</span><span class="sub">Amazon · SP · Broad</span></td><td><span class="dot warn"></span>Active</td><td class="n">$1,420</td><td class="n">$2,000</td><td class="n">1.4</td><td class="n">$1.52</td><td><span class="pace" style="--p:55%"><i></i>on pace</span></td><td><span class="ainote">ACOS 71% · pause suggested</span></td></tr>
+                <tr data-plat="tiktok" data-ch="social"><td><span class="nm">Air Fryer Recipes – Spark Ads</span><span class="sub">TikTok · Spark Ads</span></td><td><span class="dot on"></span>Active</td><td class="n">$1,180</td><td class="n">—</td><td class="n">—</td><td class="n">$0.41</td><td><span class="pace" style="--p:48%"><i></i>on pace</span></td><td><span class="ainote">Topic views ×3 this week · read-only</span></td></tr>
+                <tr data-plat="adsp" data-ch="prog"><td><span class="nm">Air Fryer – Prospecting (DSP)</span><span class="sub">Amazon DSP · Display · In-market</span></td><td><span class="dot on"></span>Active</td><td class="n">$3,860</td><td class="n">$9,400</td><td class="n">2.4</td><td class="n">—</td><td><span class="pace" style="--p:66%"><i></i>on pace</span></td><td><span class="ainote">NTB 58% · feeding retail search lift</span></td></tr>
+                <tr data-plat="roku" data-ch="prog"><td><span class="nm">CTV – Holiday teaser</span><span class="sub">Roku · CTV · 15s</span></td><td><span class="dot on"></span>Active</td><td class="n">$2,400</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td><span class="pace" style="--p:70%"><i></i>on pace</span></td><td><span class="ainote">Branded search +9% in exposed DMAs</span></td></tr>
+                <tr data-plat="meta" data-ch="social"><td><span class="nm">Air Fryer – Advantage+ Shopping</span><span class="sub">Meta · ASC</span></td><td><span class="dot on"></span>Active</td><td class="n">$2,050</td><td class="n">$2,300</td><td class="n">1.1</td><td class="n">$0.62</td><td><span class="pace" style="--p:74%"><i></i>on pace</span></td><td><span class="ainote">Direct ROAS low but assists retail · shift suggested</span></td></tr>
+                <tr data-plat="pinterest" data-ch="social"><td><span class="nm">Kitchen inspiration – Idea pins</span><span class="sub">Pinterest · Consideration</span></td><td><span class="dot on"></span>Active</td><td class="n">$640</td><td class="n">—</td><td class="n">—</td><td class="n">$0.28</td><td><span class="pace" style="--p:52%"><i></i>on pace</span></td><td></td></tr>
+                <tr data-plat="google" data-ch="search"><td><span class="nm">Shopping – Air Fryer</span><span class="sub">Google Ads · Shopping → Amazon</span></td><td><span class="dot on"></span>Active</td><td class="n">$1,720</td><td class="n">$5,900</td><td class="n">3.4</td><td class="n">$0.31</td><td><span class="pace" style="--p:63%"><i></i>on pace</span></td><td><span class="ainote">Generic-term CPA up 12%</span></td></tr>
+                <tr data-plat="bing" data-ch="search"><td><span class="nm">Search – Brand terms</span><span class="sub">Bing Ads · Exact</span></td><td><span class="dot on"></span>Active</td><td class="n">$310</td><td class="n">$1,400</td><td class="n">4.5</td><td class="n">$0.19</td><td><span class="pace" style="--p:40%"><i></i>on pace</span></td><td></td></tr>
+                <tr data-plat="amazon" data-ch="retail"><td><span class="nm">Kitchen – Kettle Auto – Phrase</span><span class="sub">Amazon · SP · Phrase</span></td><td><span class="dot on"></span>Active</td><td class="n">$1,050</td><td class="n">$2,730</td><td class="n">2.6</td><td class="n">$1.19</td><td><span class="pace" style="--p:64%"><i></i>on pace</span></td><td><span class="ainote">Excluded from promo budget lift (ROAS &lt; 3)</span></td></tr>
+              </tbody>
+            </table></div>
+            <div class="tbl-wrap" id="agenticTbl" hidden><table style="min-width:640px">
+              <thead><tr><th>Prompt cluster</th><th class="n">Answers / wk</th><th class="n">You mentioned</th><th>Top recommended</th><th class="n">Your rank</th><th>Sources cited</th><th>Agent note</th></tr></thead>
+              <tbody>
+                <tr><td><span class="nm">"best air fryer under $100"</span><span class="sub">ChatGPT · 14 prompt variants</span></td><td class="n">1,240</td><td class="n">29%</td><td>Cosori</td><td class="n">3.1</td><td>Wirecutter, RTINGS, Amazon reviews</td><td><span class="ainote">Sources compare wattage &amp; basket size — missing from your PDP</span></td></tr>
+                <tr><td><span class="nm">"air fryer vs toaster oven"</span><span class="sub">ChatGPT · 9 variants</span></td><td class="n">610</td><td class="n">12%</td><td>Ninja</td><td class="n">4.8</td><td>Serious Eats, Reddit</td><td><span class="ainote">Reddit threads drive this · Reddit is read-only</span></td></tr>
+                <tr><td><span class="nm">"quiet blender for apartments"</span><span class="sub">ChatGPT · 6 variants</span></td><td class="n">380</td><td class="n">41%</td><td>You</td><td class="n">1.4</td><td>Amazon reviews, YouTube</td><td><span class="ainote">Holding #1 · reviews mention noise level</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- thread (replaces workspace when a session runs) -->
+        <div class="thread" id="thread" hidden>
+          <button class="back" id="back">← Back to overview</button>
+          <div id="thBody" style="display:grid;gap:16px"></div>
+        </div>
+
+        <!-- floating AI input -->
+        <div class="ask" id="ask">
+          <div class="box">
+            <div class="ctx"><span>Context:</span><span class="pill neutral" id="ctxPill">Kitchen · All platforms</span><span id="ctxHint">Overview</span></div>
+            <textarea id="askInput" rows="1" placeholder="Ask about this workspace or hand off a task…"></textarea>
+            <div class="bar">
+              <span class="seg" id="mode"><button aria-pressed="false" data-mode="ask">Ask</button><button aria-pressed="true" data-mode="act">Act</button></span>
+              <span class="hint">Act mode still follows your approval rules</span>
+              <span class="hint" style="margin-left:auto"><kbd>⌘</kbd> <kbd>K</kbd></span>
+              <button class="send" id="send" aria-label="Send">↑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="rail" id="rail" hidden>
+        <div class="insight">
+          <div class="ih"><span class="av ai">A</span><b>Agent insight</b><span class="sub">updated 06:00</span></div>
+          <p>Blended ROAS is 3.5 across five channels and the funnel is working: social and CTV lift branded search, Amazon converts it. Two things need you: the Amazon campaign that catches that demand runs out of budget by noon, and Walmart "Air Fryer – Brand" is losing money on two broad terms. In AI answers you trail Cosori.</p>
+          <ul class="hl">
+            <li class="good"><span>↑</span>Social &amp; CTV lifted branded search 22%; Amazon converts it at 5.2 until budget runs out at noon</li>
+            <li class="bad"><span>↓</span>Walmart ROAS −38% on two broad terms · ChatGPT recommends Cosori over you 71% of the time</li>
+            <li class="wait"><span>⏳</span>Promo budget split still undecided · 11 days to Prime Day</li>
+          </ul>
+          <button class="btn sm primary" id="reviewBtn">Review <span id="sugCountBtn">6</span> decisions →</button>
+        </div>
+        <details class="acc" id="sugAcc"><summary hidden></summary><button data-acc>Needs your decision <span class="pill warn" id="sugCount" style="margin-left:4px">6</span><span class="chev">›</span></button>
+          <div class="b">
+            <div class="sugs" id="sugList">
+                <div class="sug" data-id="p1" data-ch="retail">
+                  <h3>Pause 3 Sponsored Products campaigns with ACOS above 60% for 14 days</h3>
+                  <p class="why">ACOS has been 64–71% for 14 days against a 35% target, and none are on the Q4 new-product protection list. Pausing saves about $230/day and loses roughly 4 orders/day.</p>
+                  <div class="meta"><span class="pill accent">Amazon · can execute</span><span class="pill good">Confidence high</span><span>3 campaigns · $260/day budget</span><span>Reversible</span></div>
+                  <button class="expand" data-toggle="d1">› How I got here</button>
+                  <div class="detail" id="d1" hidden><ol>
+                    <li><span class="tool">Insight MCP</span><span>14-day campaign performance for Kitchen, sorted by ACOS</span></li>
+                    <li><span class="tool">Playbook MCP</span><span>Rule matched: "ACOS &gt; 1.5× target for 14 days → suggest pause"</span></li>
+                    <li><span class="tool">Memory</span><span>Q4 protection list (12 ASINs): no match</span></li>
+                    <li><span class="tool">Estimate</span><span>Based on 14-day daily averages</span></li>
+                  </ol><p style="margin-top:4px"><b>Alternative:</b> keep them live and cut bids 30%. Keeps impressions, ACOS lands near 48%, saves about half as much.</p></div>
+                  <div class="actions"><button class="btn sm primary" data-ok="p1">Approve</button><button class="btn sm" data-ok="p1" data-txt="Bids cut 30% on 3 campaigns">Cut bids 30% instead</button><button class="btn sm quiet" data-ok="p1" data-txt="Dismissed, will resurface next week">Dismiss</button><label class="learn"><input type="checkbox" data-learn="pause"> Do this automatically from now on</label></div>
+                  <div class="result">✓ <span class="r-text">3 campaigns paused · undo available</span></div>
+                </div>
+                <div class="sug" data-id="p2" data-ch="retail">
+                  <h3>Raise "Kitchen – Air Fryer – Exact" daily budget from $70 to $110</h3>
+                  <p class="why">It has run out of budget before noon every day this week at a 5.2 ROAS. The increase exceeds your $30 auto-approval limit, so I'm asking. Seasonality is unclear, hence medium confidence.</p>
+                  <div class="meta"><span class="pill accent">Amazon · can execute</span><span class="pill warn">Confidence medium</span><span>+$40/day</span><button class="btn sm quiet" style="padding:0 4px" data-tab-go="settings" data-s="mcp">Above your auto-approval limit ($30)</button></div>
+                  <div class="actions"><button class="btn sm primary" data-ok="p2">Approve</button><button class="btn sm" data-ok="p2" data-txt="Budget set to $90 for a 3-day trial">Try $90 for 3 days</button><button class="btn sm quiet" data-ok="p2" data-txt="Dismissed">Dismiss</button></div>
+                  <div class="result">✓ <span class="r-text">Budget updated</span></div>
+                </div>
+                <div class="sug" data-id="p3" data-ch="retail">
+                  <h3>Add 23 search terms as negative keywords</h3>
+                  <p class="why">$330 spent over 30 days with zero conversions, and clearly off-category ("air fryer recipe book", "kettle descaler"). Produced by the "Negative keyword cleanup" task.</p>
+                  <div class="meta"><span class="pill accent">Amazon · can execute</span><span class="pill good">Confidence high</span><span>6 campaigns · saves ~$11/day</span></div>
+                  <div class="actions"><button class="btn sm primary" data-ok="p3">Approve</button><button class="btn sm" data-toggle="d3">Review the 23 terms</button><button class="btn sm quiet" data-ok="p3" data-txt="Dismissed">Dismiss</button></div>
+                  <div class="detail" id="d3" hidden><span style="font-family:var(--font-mono);font-size:12px;line-height:1.9">air fryer recipe book · kettle descaler · toaster cover · blender replacement blade · air fryer liner paper · kettle cleaning tablets · … 17 more</span></div>
+                  <div class="result">✓ <span class="r-text">23 negatives added</span></div>
+                </div>
+                <div class="sug" data-id="p5" data-ch="social">
+                <h3>Shift $400/day from Meta prospecting to Amazon "Air Fryer – Exact"</h3>
+                <p class="why">TikTok and Meta lifted branded search for "air fryer" 22% this week, but the Amazon campaign that catches that demand runs out of budget before noon. Meta's direct ROAS is 1.1; the same dollars on Amazon convert at 5.2.</p>
+                <div class="meta"><span class="pill accent">Cross-channel · Amazon executes / Meta suggests</span><span class="pill good">Confidence high</span><span>Amazon part applies instantly; Meta part is a change list</span></div>
+                <button class="expand" data-toggle="d5">› How I got here</button>
+                <div class="detail" id="d5" hidden><ol><li><span class="tool">Insight MCP</span><span>Branded search volume vs. social reach, 14 days, lagged 1 day</span></li><li><span class="tool">Insight MCP</span><span>Hourly budget exhaustion on Air Fryer – Exact</span></li><li><span class="tool">Audience Center</span><span>Segment "Recipe-video engagers" (TikTok→Meta) overlaps 64% with Amazon branded searchers</span></li><li><span class="tool">Playbook MCP</span><span>Rule: "upper-funnel lift without lower-funnel budget → rebalance"</span></li><li><span class="tool">Guardrails</span><span>GEO &amp; brand safety: no conflicts for the Amazon part</span></li></ol></div>
+                <div class="actions"><button class="btn sm primary" data-ok="p5" data-txt="Amazon budget raised; Meta change list copied">Apply Amazon part + copy Meta list</button><button class="btn sm" data-ok="p5" data-txt="Simulated — see Charts">Simulate first</button><button class="btn sm quiet" data-ok="p5" data-txt="Dismissed">Dismiss</button></div>
+                <div class="result">✓ <span class="r-text">Applied</span></div>
+              </div>
+              <div class="sug" data-id="p6" data-ch="agentic">
+                <h3>ChatGPT recommends Cosori over you in 71% of "best air fryer under $100" answers</h3>
+                <p class="why">The sources it cites (Wirecutter, RTINGS, Amazon reviews) compare wattage and basket size; your product page doesn't state either. This is a content fix, not a bid, so I can only suggest.</p>
+                <div class="meta"><span class="pill neutral">Agentic · ChatGPT · suggest only</span><span class="pill warn">Confidence medium</span><span>1,240 answers/week in this cluster</span></div>
+                <div class="actions"><button class="btn sm primary" data-ok="p6" data-txt="PDP brief sent to Tracy">Draft PDP update for Tracy</button><button class="btn sm quiet" data-ok="p6" data-txt="Dismissed">Dismiss</button></div>
+                <div class="result">✓ <span class="r-text">Sent</span></div>
+              </div>
+              <div class="sug" data-id="p4" data-ch="retail">
+                  <h3>Walmart "Air Fryer – Brand": ROAS fell from 4.6 to 2.9 in two weeks</h3>
+                  <p class="why">Two broad terms ("air fryer", "kitchen appliance") saw CPC rise 40% with no change in conversion. I can't edit Walmart campaigns yet, so I prepared the change list for you.</p>
+                  <div class="meta"><span class="pill neutral">Walmart · suggest only</span><span class="pill good">Confidence high</span><span style="color:var(--warn)">Walmart write access in progress — this becomes approvable once live</span></div>
+                  <div class="detail" style="display:grid"><ol><li><span class="tool">Change</span><span>All keyword bids × 0.8</span></li><li><span class="tool">Pause</span><span>"air fryer" (broad): $445 spent in 14 days, ROAS 1.4</span></li><li><span class="tool">Pause</span><span>"kitchen appliance" (broad): $265 spent, ROAS 1.1</span></li></ol></div>
+                  <div class="actions"><button class="btn sm primary" data-ok="p4" data-txt="Change list copied — tell me when it's applied and I'll track it">Copy change list</button><a class="btn sm" href="https://advertising.walmart.com" target="_blank" rel="noopener">Open Walmart Connect ↗</a><button class="btn sm quiet" data-ok="p4" data-txt="Dismissed">Dismiss</button></div>
+                  <div class="result">✓ <span class="r-text">Copied</span></div>
+                </div>
+              </div>
+            <p class="hiddenSug" id="hiddenSug" hidden></p>
+            <button class="btn sm quiet" data-tab-go="tasks">From last night's runs →</button>
+          </div></details>
+        <details class="acc"><summary hidden></summary><button data-acc>Context<span class="chev">›</span></button>
+          <div class="b"><div class="chips"><span class="chip">Retail · 4 <span class="lv">acts</span></span><span class="chip">Programmatic · 3 <span class="lv">acts</span></span><span class="chip">Social · 4 <span class="lv">suggests</span></span><span class="chip">Paid search · 2 <span class="lv">suggests</span></span><span class="chip">Agentic · 1 <span class="lv">reads</span></span><span class="chip">3 files</span><span class="chip">Brand context set</span><span class="chip">3 audiences · 2 deals · 38 creatives</span><span class="chip" style="border-color:var(--warn);color:var(--warn)">3 guardrails enforced</span></div><p style="font-size:12px">Target ACOS 35% (45% during promos). Q4 priority: Air Fryer line. 12 ASINs protected.</p><button class="btn sm" data-tab-go="settings" data-s="ctx">Edit context</button></div></details>
+        <details class="acc"><summary hidden></summary><button data-acc>Members <span class="sub">recent activity</span><span class="chev">›</span></button>
+          <div class="b"><div class="members"><span class="av me">Z</span><span class="av tr">T</span><span class="av ai">A</span><button class="btn sm quiet" style="margin-left:12px">Invite</button></div>
+            <ul class="act-list" id="actList">
+              <li><span class="av ai">A</span><span>Moved $330 of unspent budget to afternoon peaks (2 campaigns)<small>Budget pacing · today 11:00</small></span></li>
+              <li><span class="av tr">T</span><span>Tracy commented on "Q4 promo budget split v3"<small>Yesterday 16:20</small></span></li>
+              <li><span class="av me">Z</span><span>You approved 23 negative keywords<small>Oct 20</small></span></li>
+              <li><span class="av me">Z</span><span>You changed "Bid adjustments" to auto-approve within ±10%<small>Oct 19</small></span></li>
+              <li><span class="av tr">T</span><span>Tracy started session "Q4 promo budget split"<small>Oct 19</small></span></li>
+            </ul></div></details>
+        <details class="acc"><summary hidden></summary><button data-acc>Automations <span class="sub">5 scheduled</span><span class="chev">›</span></button>
+          <div class="b"><ul class="plain" id="autoList">
+            <li><span>Monday briefing<small>Mondays 06:00</small></span><span class="k">4 runs</span></li>
+            <li><span>Budget pacing<small>Daily 11:00</small></span><span class="k">26 runs</span></li>
+            <li><span>Negative keyword cleanup<small>Mondays</small></span><span class="k">7 runs</span></li>
+            <li><span>ROAS anomaly<small>Trigger · daily drop &gt; 25%</small></span><span class="k">3 fires</span></li>
+            <li><span>Weekly performance report<small>Fridays 17:00 → Files</small></span><span class="k">3 runs</span></li>
+          </ul><button class="btn sm" data-tab-go="tasks">Open scheduled tasks</button></div></details>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= SCHEDULED TASKS ================= -->
+  <section data-panel="tasks" hidden>
+    <div class="two-col">
+      <div class="card tlist" id="tlist">
+        <div class="h">Scheduled tasks<button class="btn sm a" id="newTask">+ New</button></div>
+        <div class="ti" role="button" tabindex="0" data-task="pacing" aria-current="true"><span class="t">Budget pacing</span><button class="toggle" aria-pressed="true" aria-label="On"></button><span class="s">Daily 11:00 · last run today 11:00 · 2 changes, 1 escalated</span></div>
+        <div class="ti" role="button" tabindex="0" data-task="brief"><span class="t">Monday briefing</span><button class="toggle" aria-pressed="true"></button><span class="s">Mondays 06:00 · last run today · 4 suggestions</span></div>
+        <div class="ti" role="button" tabindex="0" data-task="neg"><span class="t">Negative keyword cleanup</span><button class="toggle" aria-pressed="true"></button><span class="s">Mondays 06:30 · last run today · 23 terms waiting approval</span></div>
+        <div class="ti" role="button" tabindex="0" data-task="anomaly"><span class="t">ROAS anomaly</span><button class="toggle" aria-pressed="true"></button><span class="s">Trigger: daily ROAS drop &gt; 25% · fired Oct 25 20:14</span></div>
+        <div class="ti" role="button" tabindex="0" data-task="report"><span class="t">Weekly performance report</span><button class="toggle" aria-pressed="true"></button><span class="s">Fridays 17:00 · last run Oct 24 · saved to Files</span></div>
+        <div class="ti" role="button" tabindex="0" data-task="promo" id="promoTask" hidden><span class="t">Pre-promo budget prep</span><button class="toggle" aria-pressed="true"></button><span class="s">Trigger: 7 days before a promo · asks first</span></div>
+      </div>
+      <div class="tdetail" id="tdetail"></div>
+    </div>
+  </section>
+
+  <!-- ================= FILES ================= -->
+  <section data-panel="files" hidden>
+    <div class="files">
+      <div class="ftop"><span class="seg" id="fileSeg"><button aria-pressed="true" data-f="all">All</button><button aria-pressed="false" data-f="ai">Generated by Agent</button><button aria-pressed="false" data-f="up">Uploaded</button></span><div class="r"><button class="btn sm">Connect Drive</button><button class="btn sm primary">Upload</button></div></div>
+      <div class="card fgrid" id="fgrid">
+        <div class="frow head"><span></span><span>Name</span><span>Source</span><span>Modified</span><span>Referenced</span><span></span></div>
+        <div class="frow" data-f="ai"><span class="ft ai">PDF</span><span><span class="nm">Weekly performance report – Oct 19–25</span><small>Generated by "Weekly performance report" · shared with Tracy</small></span><span>Agent</span><span>Oct 24</span><span class="k">—</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="ai"><span class="ft ai">XLSX</span><span><span class="nm">Q4 promo budget split v3</span><small>From session "Q4 promo budget split" · 3 versions</small></span><span>Agent</span><span>Oct 20</span><span class="k">2 refs</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="ai"><span class="ft ai">MD</span><span><span class="nm">Walmart change list – Oct 25</span><small>From "ROAS anomaly" trigger · 3 changes</small></span><span>Agent</span><span>Oct 25</span><span class="k">1 ref</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="ai"><span class="ft ai">XLSX</span><span><span class="nm">Negative keyword cleanup results – Oct 23</span><small>Sent to Tracy</small></span><span>Agent</span><span>Oct 23</span><span class="k">—</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="up"><span class="ft">PPTX</span><span><span class="nm">Q4 advertising strategy</span><small>Uploaded by Zoe · agent extracted "promo budget +40%"</small></span><span>Zoe</span><span>Oct 2</span><span class="k">6 refs</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="up"><span class="ft">XLSX</span><span><span class="nm">Brand keyword guidelines</span><small>Brand, competitor and restricted terms</small></span><span>Zoe</span><span>Sep 30</span><span class="k">22 refs</span><button class="btn sm quiet">Open</button></div>
+        <div class="frow" data-f="up"><span class="ft">ZIP</span><span><span class="nm">Air Fryer creative assets – Q4</span><small>14 images, 3 videos · used for Creative Hub matching</small></span><span>Tracy</span><span>Oct 15</span><span class="k">4 refs</span><button class="btn sm quiet">Open</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section data-panel="settings" hidden>
+    <div class="guide" id="guide" hidden><span class="step" id="guideStep">SETUP · STEP 1 OF 3</span><span id="guideText">Add context: connect at least one ad platform, upload your strategy docs and write brand instructions.</span><div class="r"><button class="btn sm primary" id="guideDone">Done — back to overview</button><button class="btn sm quiet" id="guideSkip">Later</button></div></div>
+    <div class="settings">
+      <div class="snav" id="snav"><button data-s="ctx" aria-current="true">Context</button><button data-s="mem">Memory</button><button data-s="mcp">MCP</button><button data-s="skills">Skills</button></div>
+      <div class="spane">
+        <div class="sec" data-sp="ctx"><h3>Instructions</h3>
+          <textarea class="ins">You are the advertising agent for the Kitchen brand line. Target ACOS is 35%, relaxed to 45% during promos. In Q4, protect the Air Fryer line first, then Blender. Ask before resolving budget conflicts between lines. For Walmart, always produce a concrete change list rather than a recommendation. Report in USD.</textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn sm">Save</button></div></div>
+        <div class="sec" data-sp="ctx"><h3>Brand context<button class="btn sm a">+ Add</button></h3>
+          <div class="rows">
+            <div class="row2"><span>Goals<small>Target ACOS 35% · promo cap 45% · Q4 priority: Air Fryer → Blender → Kettle → Toaster</small></span><span class="k">31 refs</span></div>
+            <div class="row2"><span>Protected products<small>12 Q4 launch ASINs · never auto-paused, never budget-cut, on any platform</small></span><span class="k">9 refs</span></div>
+            <div class="row2"><span>Promo calendar<small>Prime Day Nov 6–10 · Black Friday Nov 27 · Cyber Monday Nov 30</small></span><span class="k">14 refs</span></div>
+            <div class="row2"><span>Brand &amp; competitor terms<small>From "Brand keyword guidelines.xlsx" · 118 brand, 64 competitor, 9 restricted</small></span><span class="k">22 refs</span></div>
+            <div class="row2"><span>Creative guidelines<small>From "Air Fryer creative assets – Q4" · tone, claims not to make</small></span><span class="k">4 refs</span></div>
+          </div></div>
+        <div class="sec" data-sp="ctx"><h3>Shared services · assets this project uses<button class="btn sm a">Manage in Prism ↗</button></h3><p class="d" style="margin-bottom:8px">Selected from the account-wide centers. The project keeps a reference, not a copy; the agent picks from these and can propose additions.</p>
+          <div class="rows">
+            <div class="row2"><span>Creative Center · 38 assets tagged "Kitchen Q4"<small>14 images, 3 videos, 21 copy variants · agent matches creatives to placements and flags missing formats</small></span><span class="k">112 refs</span></div>
+            <div class="row2"><span>Audience Center · 3 segments selected<small>Air fryer in-market 30d (ADSP) · Recipe-video engagers (TikTok→Meta) · Past purchasers excl. (all)</small></span><span class="k">41 refs</span></div>
+            <div class="row2"><span>Deal Center · 2 PMP deals<small>Roku Kitchen CTV (Q4) · ADSP Food &amp; Home premium · agent routes CTV spend through these first</small></span><span class="k">9 refs</span></div>
+            <div class="row2"><span style="color:var(--fg-2)">Agent proposed: "Branded-search lifters" segment<small>Users exposed to CTV/social who then searched the brand · from the Oct 25 cross-channel analysis</small></span><span class="actions" style="gap:6px"><button class="btn sm">Create in Audience Center</button><button class="btn sm quiet">Dismiss</button></span></div>
+          </div></div>
+        <div class="sec" data-sp="ctx"><h3>Shared services · guardrails<span class="pill warn" style="margin-left:4px">Enforced on every action</span><button class="btn sm a">Manage in Prism ↗</button></h3><p class="d" style="margin-bottom:8px">Hard constraints from the account. Unlike approval rules, these cannot be relaxed from a suggestion; every plan and every scheduled run shows a "Guardrails checked" line.</p>
+          <div class="rows">
+            <div class="row2"><span>Domain Preference<small>Allow list 212 · block list 38 · applies to ADSP, Walmart DSP, Roku</small></span><span class="k">0 conflicts · 7d</span></div>
+            <div class="row2"><span>GEO Control<small>US only · CTV excludes AK, HI, PR, GU · Walmart excludes 2 DMAs under test</small></span><span class="k">1 blocked · 7d</span></div>
+            <div class="row2"><span>Brand Safety<small>GARM floor "High" · excludes Adult, Arms, Crime, Terrorism · pre-bid on all programmatic</small></span><span class="k">0 conflicts · 7d</span></div>
+          </div></div>
+        <div class="sec" data-sp="ctx"><h3>Files &amp; links<button class="btn sm a" data-tab-go="files">Manage files →</button></h3><p class="d">3 uploaded files, 1 Slack channel synced. Link: Amazon Ads policy pages (prioritised when rules change).</p></div>
+        <div class="sec" data-sp="ctx"><h3>Session defaults</h3>
+          <div class="rows">
+            <div class="row2"><span>New sessions start in Act mode<small>Off: every session starts in Ask mode and must be switched manually</small></span><button class="toggle" aria-pressed="true"></button></div>
+            <div class="row2"><span>Sessions visible to all project members<small>Tracy sees what you hand off and what the agent did</small></span><button class="toggle" aria-pressed="true"></button></div>
+          </div></div>
+
+        <div class="sec" data-sp="mem" hidden><h3>What the agent remembers</h3><p class="d" style="margin-bottom:12px">Every entry shows where it came from. Forget any of them and later sessions stop using it. Approval rules you set while reviewing suggestions land here too.</p>
+          <div class="mem" id="memList">
+            <div class="m"><span><b>Brand fact</b> · Target ACOS 35%, relaxed to 45% during promos<small>From your instructions · 31 refs</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Brand fact</b> · Promo budget +40% (plan not final)<small>From "Q4 advertising strategy.pptx" and the Oct 20 Slack thread with Tracy · 6 refs</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Preference</b> · When a budget raise exceeds the limit, offer a middle number first ($90, not $110)<small>From an Oct 12 approval · 2 refs</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Preference</b> · No Slack pings on weekends — put it in the Monday briefing<small>From an Oct 5 session · 3 refs</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Preference</b> · Tracy wants competitor-term stats included in negative keyword reports<small>From the Oct 24 reply · 1 ref</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Approval rule</b> · Bid adjustments within ±10% run without asking<small>Set on Oct 19 by ticking "do this automatically" on a suggestion · 48 refs</small></span><button class="forget">Forget</button></div>
+            <div class="m"><span><b>Approval rule</b> · Budget changes ≤ $30 run without asking<small>Changed on Oct 12 in MCP permissions · 26 refs</small></span><button class="forget">Forget</button></div>
+          </div></div>
+
+        <div class="sec" data-sp="mcp" hidden><h3>Connected MCP servers<button class="btn sm a">+ Connect</button></h3><p class="d" style="margin-bottom:12px">Grouped by channel. Each server shows whether the agent can act, suggest or only read there today; your approval rules apply wherever it can act.</p>
+          <div class="mcp">
+            <div class="mg">Shared</div>
+            <div class="srv"><div class="h"><b>Pacvue Insight</b><span class="nm">insight-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">read</span></span></span></div><div class="tools"><span>get_campaign_performance</span><span>get_hourly_spend</span><span>get_search_terms</span><span>get_sov</span><span>get_brand_analytics</span></div></div>
+            <div class="srv"><div class="h"><b>Pacvue Playbook</b><span class="nm">playbook-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">read</span></span></span></div><div class="tools"><span>get_optimization_candidates</span><span>get_rules</span><span>check_protection_list</span></div></div>
+            <div class="mg">Retail <span class="lv">acts</span></div>
+            <div class="srv"><div class="h"><b>Pacvue Campaign Management · Amazon</b><span class="nm">campaign-mgmt-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">acts · write</span></span></span></div>
+              <div class="rows" id="matrix">
+                <div class="row2" data-action="bid"><span><span class="tool">update_bid</span> Bid adjustments<small>Within ±10%, once per campaign per day</small></span><span class="seg3"><button aria-pressed="true">Auto</button><button aria-pressed="false">Ask me</button><button aria-pressed="false">Suggest only</button></span></div>
+                <div class="row2" data-action="budget"><span><span class="tool">update_budget</span> Budget changes<small>≤ $30 per change; larger changes ask</small></span><span class="seg3"><button aria-pressed="true">Auto</button><button aria-pressed="false">Ask me</button><button aria-pressed="false">Suggest only</button></span></div>
+                <div class="row2" data-action="pause"><span><span class="tool">set_campaign_state</span> Pause / enable campaigns<small>Never on the protection list</small></span><span class="seg3"><button aria-pressed="false">Auto</button><button aria-pressed="true">Ask me</button><button aria-pressed="false">Suggest only</button></span></div>
+                <div class="row2" data-action="negative"><span><span class="tool">add_negative_keywords</span> Negative keywords<small>Only terms with &gt; $7 spend and 0 conversions in 30 days</small></span><span class="seg3"><button aria-pressed="false">Auto</button><button aria-pressed="true">Ask me</button><button aria-pressed="false">Suggest only</button></span></div>
+                <div class="row2" data-action="create"><span><span class="tool">create_campaign</span> Create campaigns<small>Plan and estimate only</small></span><span class="seg3"><button aria-pressed="false">Auto</button><button aria-pressed="false">Ask me</button><button aria-pressed="true">Suggest only</button></span></div>
+              </div></div>
+            <div class="srv"><div class="h"><b>Pacvue Campaign Management · Walmart</b><span class="nm">campaign-mgmt-mcp</span><span class="pill warn">Read only</span><span class="r"><span class="chip"><span class="lv soon">write access in progress</span></span></span></div><div class="tools"><span>get_campaigns</span><span class="w">update_bid · pending</span><span class="w">set_campaign_state · pending</span></div><p class="d" style="font-size:12px">Until write tools ship, the agent produces change lists. Your Amazon permissions above will apply here automatically once they do.</p></div>
+            <div class="srv"><div class="h"><b>Instacart · Target</b><span class="nm">campaign-mgmt-mcp</span><span class="pill warn">Read only</span><span class="r"><span class="chip"><span class="lv">suggests</span></span></span></div><div class="tools"><span>get_campaigns</span><span>get_performance</span></div></div>
+            <div class="mg">Programmatic <span class="lv">acts · suggests</span></div>
+            <div class="srv"><div class="h"><b>Amazon DSP</b><span class="nm">adsp-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">acts · write</span></span></span></div><div class="rows"><div class="row2" data-action="dspbudget"><span><span class="tool">update_line_item_budget</span> Line-item budgets<small>≤ 10% per change</small></span><span class="seg3"><button aria-pressed="false">Auto</button><button aria-pressed="true">Ask me</button><button aria-pressed="false">Suggest only</button></span></div></div></div>
+            <div class="srv"><div class="h"><b>Walmart DSP · Roku</b><span class="nm">dsp-mcp</span><span class="pill warn">Read only</span><span class="r"><span class="chip"><span class="lv">suggests</span></span></span></div><div class="tools"><span>get_line_items</span><span>get_reach_frequency</span><span>get_exposed_lift</span></div></div>
+            <div class="mg">Social &amp; Discovery <span class="lv">suggests · reads</span></div>
+            <div class="srv"><div class="h"><b>TikTok · Meta</b><span class="nm">social-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">suggests</span></span></span></div><div class="tools"><span>get_campaign_metrics</span><span>get_trending_topics</span><span>get_recommendations</span><span class="w">update_budget · pending</span></div><p class="d" style="font-size:12px">Change lists until write tools ship. Cross-channel suggestions that touch social are split: the retail half applies, the social half is a list.</p></div>
+            <div class="srv"><div class="h"><b>Pinterest · Reddit</b><span class="nm">social-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">reads</span></span></span></div><div class="tools"><span>get_campaign_metrics</span><span>get_trending_pins</span><span>get_thread_mentions</span></div></div>
+            <div class="mg">Paid search <span class="lv">suggests · reads</span></div>
+            <div class="srv"><div class="h"><b>Google Ads · Bing Ads</b><span class="nm">search-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">suggests</span></span></span></div><div class="tools"><span>get_campaign_metrics</span><span>get_search_terms</span><span>get_recommendations</span></div></div>
+            <div class="mg">Agentic <span class="lv">reads</span></div>
+            <div class="srv"><div class="h"><b>AI visibility · ChatGPT</b><span class="nm">agentic-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">reads</span></span></span></div><div class="tools"><span>get_answer_share</span><span>get_cited_sources</span><span>get_prompt_clusters</span></div><p class="d" style="font-size:12px">No ad product to act on yet; the agent turns answer gaps into content and review suggestions for the team.</p></div>
+            <div class="mg">Shared services</div>
+            <div class="srv"><div class="h"><b>Creative Hub</b><span class="nm">creative-hub-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">read + propose</span></span></span></div><div class="tools"><span>search_assets</span><span>get_asset_performance</span><span>propose_creative_brief</span></div></div>
+            <div class="srv"><div class="h"><b>Audience Center</b><span class="nm">audience-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">acts · write</span></span></span></div><div class="rows"><div class="row2" data-action="audience"><span><span class="tool">create_audience</span> Create audiences<small>From a cross-platform segment definition</small></span><span class="seg3"><button aria-pressed="false">Auto</button><button aria-pressed="true">Ask me</button><button aria-pressed="false">Suggest only</button></span></div></div></div>
+            <div class="srv"><div class="h"><b>Deal Center</b><span class="nm">deal-mcp</span><span class="pill good">Connected</span><span class="r"><span class="chip"><span class="lv">read</span></span></span></div><div class="tools"><span>get_deals</span><span>get_deal_pacing</span></div></div>
+            <div class="srv"><div class="h"><b>Guardrails · Domain, GEO, Brand Safety</b><span class="nm">guardrails-mcp</span><span class="pill good">Enforced</span><span class="r"><span class="chip"><span class="lv">read only</span></span></span></div><div class="tools"><span>check_action</span><span>get_domain_lists</span><span>get_geo_rules</span><span>get_brand_safety_profile</span></div><p class="d" style="font-size:12px">Called before every write tool. A blocked action is logged and never retried silently; approval rules cannot override it.</p></div>
+            <div class="mg">Integrations</div>
+            <div class="srv" id="srvSlack"><div class="h"><b>Slack</b><span class="nm">slack-mcp</span><span class="pill neutral" id="slackPill">Not connected</span><span class="r"><button class="btn sm" id="slackConnect">Connect</button></span></div><p class="d" style="font-size:12px">Briefings, alerts and @Pacvue hand-offs in #kitchen-ads.</p></div>
+            <div class="srv"><div class="h"><b>Google Drive</b><span class="nm">gdrive-mcp</span><span class="pill neutral">Not connected</span><span class="r"><button class="btn sm">Connect</button></span></div><p class="d" style="font-size:12px">Sync strategy docs into Files automatically.</p></div>
+          </div></div>
+
+        <div class="sec" data-sp="skills" hidden><h3>Skills<button class="btn sm a" id="addSkill">+ Save a session as a skill</button></h3><p class="d" style="margin-bottom:12px">A skill is a repeatable way of doing something in this project. Scheduled tasks run skills on a cadence or a trigger.</p>
+          <div class="rows" id="skillRows">
+            <div class="row2"><span>Negative keyword cleanup<small>Find terms with &gt; $7 spend and 0 conversions in 30 days; act within approval rules; include competitor-term stats</small></span><span class="k">7 runs</span></div>
+            <div class="row2"><span>Budget pacing<small>Find campaigns that will exhaust budget early; shift unspent budget to peak hours within limits</small></span><span class="k">26 runs</span></div>
+            <div class="row2"><span>Monday briefing<small>Summarise last week, list pending decisions, refresh the project summary</small></span><span class="k">4 runs</span></div>
+            <div class="row2"><span>ROAS anomaly analysis<small>Find the cause, then either act within limits or produce a change list</small></span><span class="k">3 fires</span></div>
+            <div class="row2"><span>Weekly performance report<small>KPIs, top movers, agent actions taken; export PDF to Files and share</small></span><span class="k">3 runs</span></div>
+          </div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="drawer" id="drawer" hidden><div class="dh"><b>Suggestion</b><button class="btn sm quiet" id="drawerClose">Close ✕</button></div><div class="db" id="drawerBody"></div></div>
+<div class="modal" id="modal" hidden>
+  <div class="mbox">
+    <div class="mh"><div><b id="mTitle"></b><small id="mSub"></small></div><div class="r"><button class="btn sm">Pin to overview</button><button class="btn sm">Add to report</button><button class="btn sm quiet" id="mClose">Close ✕</button></div></div>
+    <div class="mgrid">
+      <div class="mmain"><div class="params" id="mParams"></div><div class="mchart" id="mChart"></div><div class="mlegend" id="mLegend"></div></div>
+      <aside class="mai">
+        <div class="aih"><span class="av ai">A</span><b>Ask about this chart</b></div>
+        <div class="aichat" id="aiChat"></div>
+        <div class="aichips" id="aiChips"></div>
+        <div class="reply"><input id="aiInput" placeholder="e.g. why did spend jump on Oct 20?"><button class="btn sm dark" id="aiSend">Ask</button></div>
+      </aside>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const toastEl = $('#toast'); let tt;
+  function toast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => toastEl.classList.remove('show'), 4000); }
+
+  // ---- tabs
+  function tab(name) {
+    $$('.tabs [data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+    $$('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== name);
+    window.scrollTo({ top: 0 });
+  }
+  $$('.tabs [data-tab]').forEach(b => b.addEventListener('click', () => tab(b.dataset.tab)));
+  document.addEventListener('click', e => { const b = e.target.closest('[data-tab-go]'); if (!b) return; tab(b.dataset.tabGo); if (b.dataset.s) sPane(b.dataset.s); });
+  const h = (location.hash || '').replace('#', ''); if (['overview', 'tasks', 'files', 'settings'].includes(h)) tab(h);
+  $('#railToggle').addEventListener('click', () => { const on = $('#railToggle').getAttribute('aria-pressed') !== 'true'; $('#railToggle').setAttribute('aria-pressed', String(on)); $('#ov').classList.toggle('rail-off', !on); placeAsk(); });
+  $$('[data-acc]').forEach(b => b.addEventListener('click', () => { const d = b.closest('details'); d.open = !d.open; }));
+  $$('.toggle').forEach(t => t.addEventListener('click', e => { e.stopPropagation(); t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true')); }));
+
+  let plat = 'all', kpi = null;
+  // ---- setup
+  const steps = { ctx: false, team: false, slack: false };
+  let bannerShown = false, bannerTimer;
+  function renderSetup() {
+    const n = Object.values(steps).filter(Boolean).length;
+    $('#setupProg').textContent = `${n} / 3`;
+    $$('#setup .row').forEach(r => r.classList.toggle('done', steps[r.dataset.step]));
+    const ready = n === 3;
+    $('#setup').hidden = ready; $('#emptyWs').hidden = ready; $('#ws').hidden = !ready; $('#invite').hidden = true; $('#rail').hidden = !ready; $('#sess').hidden = !ready; $('#ov').classList.toggle('setup', !ready); placeAsk();
+    if (ready && !bannerShown) { bannerShown = true; const b = $('#doneBanner'); b.hidden = false; b.classList.remove('fade'); clearTimeout(bannerTimer); bannerTimer = setTimeout(() => { b.classList.add('fade'); setTimeout(() => b.hidden = true, 600); }, 6000); }
+    if (!ready) { $('#doneBanner').hidden = true; bannerShown = false; }
+    setCtx();
+  }
+  $('#dismissBanner').addEventListener('click', () => { $('#doneBanner').hidden = true; });
+  // guided steps: context and Slack happen in Settings, invite happens inline
+  let guideStep = null;
+  const guides = { ctx: ['SETUP · STEP 1 OF 3', 'Add context: connect at least one ad platform, upload your strategy docs and write brand instructions.', 'ctx'], slack: ['SETUP · STEP 3 OF 3', 'Connect Slack so briefings and alerts reach #kitchen-ads and the team can hand off tasks with @Pacvue.', 'mcp'] };
+  function showGuide(k) { guideStep = k; const g = guides[k]; tab('settings'); sPane(g[2]); $('#guide').hidden = false; $('#guideStep').textContent = g[0]; $('#guideText').textContent = g[1]; if (k === 'slack') { $('#srvSlack').classList.add('hl'); $('#srvSlack').scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
+  function endGuide(done) { if (done && guideStep) steps[guideStep] = true; $('#guide').hidden = true; $('#srvSlack').classList.remove('hl'); const k = guideStep; guideStep = null; tab('overview'); renderSetup(); if (done) toast(k === 'ctx' ? 'Context saved: Retail and Programmatic platforms connected · 3 files · instructions. Add more channels from the bar any time' : 'Slack connected: #kitchen-ads'); }
+  $('#guideDone').addEventListener('click', () => endGuide(true));
+  $('#slackConnect').addEventListener('click', () => {
+    const pill = $('#slackPill'); pill.textContent = 'Connected · #kitchen-ads'; pill.className = 'pill good'; $('#slackConnect').textContent = 'Connected'; $('#slackConnect').disabled = true;
+    if (guideStep === 'slack') endGuide(true); else { steps.slack = true; toast('Slack connected: #kitchen-ads'); }
+  });
+  $('#guideSkip').addEventListener('click', () => endGuide(false));
+  $$('[data-do]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.do;
+    if (k === 'team') { $('#invite').hidden = false; $('#invite').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    showGuide(k);
+  }));
+  $('#invSend').addEventListener('click', () => { steps.team = true; renderSetup(); toast('Invite sent to ' + $('#invEmail').value + ' as Editor'); });
+  $('#invCancel').addEventListener('click', () => { $('#invite').hidden = true; });
+  $('#skipSetup').addEventListener('click', () => { Object.keys(steps).forEach(k => steps[k] = true); renderSetup(); });
+  $('#resetSetup').addEventListener('click', () => { Object.keys(steps).forEach(k => steps[k] = false); renderSetup(); $$('.sug').forEach(s => s.classList.remove('done', 'open')); countSug(); tab('overview'); });
+
+  // ---- projects home
+  function showHome() { $('#home').hidden = false; $('#project').hidden = true; window.scrollTo({ top: 0 }); }
+  function showProject() { $('#home').hidden = true; $('#project').hidden = false; window.scrollTo({ top: 0 }); }
+  $('#toHome').addEventListener('click', showHome);
+  $('#projSwitch').addEventListener('click', () => toast('Project switcher: jump between projects without going back to the list'));
+  $$('[data-open-project]').forEach(c => c.addEventListener('click', () => { if (c.dataset.openProject === 'kitchen') showProject(); else toast('This mockup only opens Kitchen Brand Line'); }));
+  [$('#newProject'), $('#newProject2')].forEach(b => b.addEventListener('click', () => toast('New project: name it, pick a template (Brand line / Client account / Campaign launch), then the 3-step setup runs inside the project')));
+  $$('#homeSeg button').forEach(b => b.addEventListener('click', () => $$('#homeSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)))));
+  // suggestion cards: compact in the rail, full detail in a drawer
+  let drawerPh = null, drawerCard = null;
+  function openDrawer(card) { closeDrawer(); drawerPh = document.createComment('ph'); card.parentNode.insertBefore(drawerPh, card); $('#drawerBody').appendChild(card); drawerCard = card; $('#drawer').hidden = false; }
+  function closeDrawer() { if (drawerCard && drawerPh) { drawerPh.parentNode.insertBefore(drawerCard, drawerPh); drawerPh.remove(); } drawerCard = drawerPh = null; $('#drawer').hidden = true; }
+  $$('.sug').forEach(c => { const m = document.createElement('span'); m.className = 'more'; m.textContent = 'Details →'; $('.actions', c).appendChild(m); c.addEventListener('click', e => { if (e.target.closest('button, a, label, input, .detail')) return; if (!c.closest('.drawer')) openDrawer(c); }); });
+  $('#drawerClose').addEventListener('click', closeDrawer);
+  $('#reviewBtn').addEventListener('click', () => { $('#sugAcc').open = true; $('#sugAcc').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  $$('[data-ok]').forEach(b => b.addEventListener('click', () => { if (b.closest('.drawer')) setTimeout(closeDrawer, 700); }));
+
+  // ---- platform filter
+  // ---- channels & platforms
+  const CH = { cross: { name: 'Cross-channel', plats: [] }, retail: { name: 'Retail', plats: ['amazon', 'walmart', 'instacart', 'target'], tier: 'acts' }, prog: { name: 'Programmatic', plats: ['adsp', 'walmartdsp', 'roku'], tier: 'acts' }, social: { name: 'Social & Discovery', plats: ['tiktok', 'meta', 'pinterest', 'reddit'], tier: 'suggests' }, search: { name: 'Paid search', plats: ['google', 'bing'], tier: 'suggests' }, agentic: { name: 'Agentic', plats: ['chatgpt', 'perplexity'], tier: 'reports' } };
+  const PN = { amazon: 'Amazon', walmart: 'Walmart', instacart: 'Instacart', target: 'Target', adsp: 'Amazon DSP', walmartdsp: 'Walmart DSP', roku: 'Roku', tiktok: 'TikTok', meta: 'Meta', pinterest: 'Pinterest', reddit: 'Reddit', google: 'Google Ads', bing: 'Bing Ads', chatgpt: 'ChatGPT', perplexity: 'Perplexity' };
+  let ch = 'cross';
+  const onBar = new Set(['retail', 'prog']);
+  function isOn(c) { return c === 'cross' || onBar.has(c); }
+  const KPIS = {
+    cross: [['Total spend', '$262.4K', '+3.9%', 'up', '0,16 14,15 28,14 42,13 56,11 70,10 84,9 100,8', 'Retail 81% · Programmatic 19% · channels on your bar'], ['Attributed sales', '$923.6K', '+3.1%', 'up', '0,18 14,16 28,17 42,12 56,13 70,9 84,10 100,6', 'Incl. view-through from DSP & social'], ['Blended ROAS', '3.52', '−0.03', 'flat', '0,12 14,13 28,11 42,12 56,12 70,13 84,12 100,12', 'Retail 4.1 · DSP 2.4'], ['iROAS', '2.60', '+0.1', 'up', '0,16 14,15 28,15 42,13 56,12 70,11 84,10 100,9', 'Geo holdout · 14 days in'], ['New-to-brand', '38%', '+2 pt', 'up', '0,16 14,15 28,14 42,14 56,12 70,11 84,10 100,9', 'DSP & CTV drive 71% of NTB'], ['Branded search lift', '+22%', 'vs prev 7d', 'up', '0,20 14,19 28,18 42,16 56,12 70,10 84,8 100,5', 'Follows social/CTV reach with 1-day lag']],
+    retail: [['Sales', '$751.1K', '+3.8%', 'up', '0,18 14,16 28,17 42,12 56,13 70,9 84,10 100,6', 'Air Fryer line drove 61% of the lift'], ['Spend', '$183.2K', '+4.2%', 'up', '0,16 14,15 28,14 42,13 56,11 70,10 84,9 100,8', '3 campaigns exhaust budget before noon'], ['CPC', '$1.24', '+6.1%', 'down', '0,18 14,17 28,15 42,16 56,12 70,10 84,8 100,6', 'Walmart broad terms up 40%'], ['ROAS', '4.10', 'flat', 'flat', '0,12 14,13 28,11 42,12 56,12 70,13 84,12 100,12', 'Amazon 4.3 · Walmart 3.4'], ['iROAS', '2.90', '+0.2', 'up', '0,16 14,15 28,15 42,13 56,12 70,11 84,10 100,9', 'Incrementality test · 14 days in'], ['ACOS', '24.4%', '−0.3 pt', 'up', '0,8 14,9 28,10 42,10 56,11 70,12 84,12 100,13', 'Target 35% · promo cap 45%']],
+    prog: [['Spend', '$41.6K', '+5.0%', 'up', '0,16 14,15 28,14 42,13 56,12 70,11 84,10 100,8', 'ADSP 68% · Roku 24% · Walmart DSP 8%'], ['Impressions', '18.4M', '+9.2%', 'up', '0,18 14,17 28,15 42,14 56,12 70,10 84,9 100,6', 'Frequency 3.1 / week'], ['CPM', '$2.26', '−3.1%', 'up', '0,10 14,11 28,12 42,12 56,13 70,14 84,15 100,16', 'CTV $14.80 · display $1.40'], ['Attributed sales', '$118K', '+6.5%', 'up', '0,16 14,15 28,14 42,12 56,12 70,10 84,9 100,7', 'View-through 14d'], ['ROAS', '2.84', '+0.1', 'up', '0,14 14,13 28,14 42,13 56,12 70,12 84,11 100,11', 'In-market audiences 3.6'], ['NTB share', '54%', '+3 pt', 'up', '0,16 14,15 28,15 42,14 56,13 70,12 84,11 100,10', 'Prospecting doing its job']],
+    social: [['Spend', '$22.9K', '+2.1%', 'up', '0,14 14,14 28,13 42,13 56,12 70,12 84,11 100,11', 'TikTok 52% · Meta 38% · Pinterest 7% · Reddit 3%'], ['Reach', '6.1M', '+11%', 'up', '0,18 14,16 28,15 42,13 56,12 70,10 84,8 100,6', 'Air fryer recipe topic ×3'], ['CPM', '$3.75', '−1.8%', 'up', '0,12 14,12 28,13 42,13 56,13 70,14 84,14 100,15', 'Spark Ads cheapest at $2.10'], ['Engagement', '4.2%', '+0.4 pt', 'up', '0,16 14,15 28,14 42,13 56,12 70,10 84,9 100,8', 'Recipe creatives lead'], ['Attributed sales', '$31K', '+1.2%', 'flat', '0,13 14,13 28,13 42,12 56,13 70,12 84,12 100,12', 'Direct ROAS 1.35 — assists retail'], ['Branded search lift', '+22%', 'vs prev 7d', 'up', '0,20 14,19 28,18 42,16 56,12 70,10 84,8 100,5', 'Measured on Amazon & Google']],
+    search: [['Spend', '$14.7K', '+1.5%', 'up', '0,14 14,14 28,13 42,13 56,13 70,12 84,12 100,12', 'Google 94% · Bing 6%'], ['Clicks', '61.2K', '+3.0%', 'up', '0,16 14,15 28,14 42,13 56,12 70,11 84,10 100,9', 'Shopping 71% of clicks'], ['CPC', '$0.24', '−1.5%', 'up', '0,12 14,12 28,13 42,13 56,13 70,14 84,14 100,14', 'Brand $0.11 · generic $0.38'], ['Conversions', '1,840', '+4.4%', 'up', '0,16 14,15 28,14 42,13 56,12 70,11 84,9 100,8', 'Landing on Amazon PDPs'], ['CPA', '$8.00', '+12% generic', 'down', '0,14 14,14 28,13 42,12 56,11 70,10 84,9 100,8', 'Generic terms getting pricier'], ['ROAS', '3.40', '+0.1', 'up', '0,13 14,13 28,13 42,12 56,12 70,12 84,11 100,11', 'Brand 6.1 · generic 2.2']],
+    agentic: [['Share of answers', '12%', '+2 pt', 'up', '0,18 14,17 28,16 42,15 56,13 70,12 84,10 100,9', '"air fryer" prompt clusters · ChatGPT'], ['Mentions / week', '184', '+31', 'up', '0,18 14,17 28,16 42,14 56,13 70,11 84,10 100,8', 'Across 29 prompt variants'], ['Avg. rank', '3.4', '−0.2', 'up', '0,8 14,9 28,9 42,10 56,10 70,11 84,12 100,12', 'When mentioned · lower is better'], ['Top competitor', 'Cosori', '71% of answers', 'down', '0,14 14,13 28,12 42,11 56,10 70,9 84,8 100,7', 'Cited for wattage & basket size'], ['Sentiment', '78%', '+1 pt', 'flat', '0,12 14,12 28,12 42,12 56,12 70,12 84,12 100,11', 'Positive mentions'], ['Cited sources', '9', '2 new', 'flat', '0,14 14,14 28,13 42,13 56,13 70,13 84,12 100,12', 'Wirecutter · RTINGS · Reddit · reviews']]
+  };
+  function renderKpis() {
+    $('#kpis').innerHTML = KPIS[ch].map(k => `<button class="kpi" data-kpi="${k[0]}"><span class="lbl">${k[0]}</span><span class="val">${k[1]}<small class="${k[3]}">${k[2]}</small></span><svg viewBox="0 0 100 26" preserveAspectRatio="none"><polyline points="${k[4]}"/></svg><span class="ai">${k[5]}</span></button>`).join('');
+    }
+  function setChannel(c, p) {
+    ch = c; plat = p || 'all'; kpi = null;
+    $$('.chb').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ch === c)));
+    $$('.chg .dd').forEach(d => d.hidden = true);
+    renderKpis();
+    const label = c === 'cross' ? 'Cross-channel' : (plat === 'all' ? CH[c].name : PN[plat]);
+    $('#perfTitle').textContent = 'Performance · ' + label;
+    $('#tierTag').textContent = c === 'cross' ? 'Cross-channel rolls up ' + Array.from(onBar).map(k => CH[k].name).join(' + ') + (onBar.size < 5 ? ' · add channels to widen it' : '') : CH[c].tier === 'acts' ? 'Agent can act here within your approval rules' : CH[c].tier === 'suggests' ? 'Agent suggests here · you apply in the platform' : 'Agent reports here · no ad product yet';
+    const rows = $$('#campTbl tbody tr'); let n = 0;
+    rows.forEach(tr => { const show = c === 'cross' ? onBar.has(tr.dataset.ch) : (tr.dataset.ch === c && (plat === 'all' || tr.dataset.plat === plat)); tr.hidden = !show; if (show) n++; });
+    $('#campTbl').parentElement.hidden = c === 'agentic'; $('#agenticTbl').hidden = c !== 'agentic';
+    $('#campCount').textContent = c === 'agentic' ? '3 prompt clusters tracked · 29 variants' : (c === 'cross' ? `${n} shown · top by spend across ${Array.from(onBar).map(k => CH[k].name).join(', ')}` : `${n} shown · ${label}`);
+    refreshSugVisibility();
+    $('#campTitle').textContent = c === 'agentic' ? 'AI answer visibility' : 'Campaigns';
+    setCtx();
+  }
+  function refreshSugVisibility() {
+    let hiddenN = 0, names = new Set();
+    $$('.sug[data-ch]').forEach(sg => { const off = !isOn(sg.dataset.ch) && !sg.closest('.drawer'); sg.hidden = off; if (off && !sg.classList.contains('done')) { hiddenN++; names.add(CH[sg.dataset.ch].name); } });
+    const h = $('#hiddenSug'); h.hidden = !hiddenN; if (hiddenN) { h.innerHTML = `${hiddenN} more in channels not on your bar · ` + Array.from(names).map(n => `<button data-addname="${n}">Add ${n}</button>`).join(' · '); $$('[data-addname]', h).forEach(b => b.addEventListener('click', () => addChannel(Object.keys(CH).find(k => CH[k].name === b.dataset.addname)))); }
+    countSug();
+  }
+  function renderAddMenu() { $$('#addDd [data-add]').forEach(b => b.hidden = onBar.has(b.dataset.add)); $('#addChg').hidden = onBar.size === 5; }
+  function addChannel(c) { onBar.add(c); const g = $(`.chg[data-ch="${c}"]`); g.hidden = false; g.classList.remove('flash'); void g.offsetWidth; g.classList.add('flash'); renderAddMenu(); setChannel(c, 'all'); toast(`${CH[c].name} added to your bar. Cross-channel now includes it.`); addAct('me', `You added ${CH[c].name} to the channel bar`, 'Just now'); }
+  function removeChannel(c) { onBar.delete(c); $(`.chg[data-ch="${c}"]`).hidden = true; renderAddMenu(); setChannel('cross', 'all'); toast(`${CH[c].name} removed from your bar. Its data and suggestions are hidden, not deleted.`); }
+  $('#addCh').addEventListener('click', e => { e.stopPropagation(); const dd = $('#addDd'); const open = dd.hidden; $$('.chg .dd').forEach(d => d.hidden = true); dd.hidden = !open; });
+  $$('#addDd [data-add]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); addChannel(b.dataset.add); }));
+  $$('.chg .dd [data-remove]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); removeChannel(b.closest('.chg').dataset.ch); }));
+  renderAddMenu();
+  $$('.chb[data-ch]').forEach(b => b.addEventListener('click', () => setChannel(b.dataset.ch, 'all')));
+  $$('.chv').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const dd = b.nextElementSibling; const open = dd.hidden; $$('.chg .dd').forEach(d => d.hidden = true); dd.hidden = !open; }));
+  $$('.chg .dd button[data-plat]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setChannel(b.closest('.chg').dataset.ch, b.dataset.plat); }));
+  document.addEventListener('click', () => $$('.chg .dd').forEach(d => d.hidden = true));
+  $$('.kpi').forEach(k => k.addEventListener('click', () => { kpi = kpi === k.dataset.kpi ? null : k.dataset.kpi; $$('.kpi').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.kpi === kpi))); setCtx(); }));
+
+  // ---- suggestions
+  $$('[data-toggle]').forEach(b => b.addEventListener('click', () => { const d = $('#' + b.dataset.toggle); d.hidden = !d.hidden; }));
+  function countSug() { const n = $$('.sug:not(.done)').filter(x => !x.hidden).length; $('#sugCount').textContent = n ? n : '✓'; $('#sugCount').className = 'pill ' + (n ? 'warn' : 'good'); $('#sugCountBtn').textContent = n; $('#reviewBtn').hidden = !n; const hp = $('#homeKitchenPill'); hp.textContent = n ? `${n} waiting` : 'All clear'; hp.className = 'pill ' + (n ? 'warn' : 'good'); }
+  $$('[data-ok]').forEach(b => b.addEventListener('click', () => { const c = b.closest('.sug'); c.classList.add('done'); if (b.dataset.txt) $('.r-text', c).textContent = b.dataset.txt; countSug(); addAct('me', 'You ' + (b.dataset.txt ? 'responded to' : 'approved') + ' "' + $('h3', c).textContent.slice(0, 48) + '…"', 'Just now'); toast('Recorded · undo available in this session'); }));
+  $$('[data-learn]').forEach(c => c.addEventListener('change', () => { if (c.checked) { setAuth('pause', 1, 'Set by ticking "do this automatically" on a suggestion'); toast('Got it — ACOS-driven pauses will run automatically. Updated in MCP permissions and Memory.'); } }));
+  function addAct(who, text, when) { const li = document.createElement('li'); li.className = 'flash'; li.innerHTML = `<span class="av ${who}">${{ me: 'Z', tr: 'T', ai: 'A' }[who]}</span><span>${text}<small>${when}</small></span>`; $('#actList').prepend(li); }
+
+  // ---- approval rules
+  const names = { bid: 'Bid adjustments', budget: 'Budget changes', pause: 'Pause / enable campaigns', negative: 'Negative keywords', create: 'Create campaigns', dspbudget: 'DSP line-item budgets', audience: 'Create audiences' };
+  const levels = ['', 'Auto', 'Ask me', 'Suggest only'];
+  function setAuth(action, level, src) {
+    const row = $(`.row2[data-action="${action}"]`); const btns = $$('.seg3 button', row);
+    const prev = btns.findIndex(b => b.getAttribute('aria-pressed') === 'true') + 1; if (prev === level) return;
+    btns.forEach((b, i) => b.setAttribute('aria-pressed', String(i + 1 === level)));
+    row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
+    const m = document.createElement('div'); m.className = 'm flash';
+    m.innerHTML = `<span><b>Approval rule</b> · ${names[action]}: ${levels[level]} (was "${levels[prev]}")<small>${src} · just now</small></span><button class="forget">Forget</button>`;
+    $('#memList').prepend(m); $('.forget', m).addEventListener('click', () => m.classList.toggle('gone'));
+    addAct('me', `You changed "${names[action]}" to ${levels[level]}`, 'Just now');
+  }
+  $$('.row2[data-action]').forEach(row => $$('.seg3 button', row).forEach((b, i) => b.addEventListener('click', () => { setAuth(row.dataset.action, i + 1, 'Changed in MCP permissions'); toast(`${names[row.dataset.action]}: ${levels[i + 1]} — saved to Memory`); })));
+  $$('.mem .forget').forEach(b => b.addEventListener('click', () => { const m = b.closest('.m'); m.classList.toggle('gone'); b.textContent = m.classList.contains('gone') ? 'Restore' : 'Forget'; }));
+
+  // ---- settings nav
+  function sPane(s) { $$('#snav button').forEach(x => x.setAttribute('aria-current', String(x.dataset.s === s))); $$('[data-sp]').forEach(p => p.hidden = p.dataset.sp !== s); }
+  $$('#snav button').forEach(b => b.addEventListener('click', () => sPane(b.dataset.s)));
+  $('#addSkill').addEventListener('click', () => toast('Run a session from the Overview, then choose "Save as skill" when it completes'));
+
+  // ---- files filter
+  $$('#fileSeg button').forEach(b => b.addEventListener('click', () => { $$('#fileSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); $$('#fgrid .frow:not(.head)').forEach(r => r.hidden = b.dataset.f !== 'all' && r.dataset.f !== b.dataset.f); }));
+
+  // ---- floating input: pin to the viewport bottom, aligned with the main column
+  function placeAsk() { const r = $('#ovMain').getBoundingClientRect(); const a = $('#ask'); a.style.left = r.left + 'px'; a.style.right = 'auto'; a.style.width = Math.max(240, r.width - (window.innerWidth > 900 ? 24 : 0)) + 'px'; }
+  window.addEventListener('resize', placeAsk); new ResizeObserver(placeAsk).observe($('#ovMain'));
+  // ---- floating input: context-aware placeholder
+  const input = $('#askInput'), ctxPill = $('#ctxPill'), ctxHint = $('#ctxHint');
+  let section = 'overview', rot = 0, rotTimer;
+  const io = new IntersectionObserver(es => { es.forEach(e => { if (e.isIntersecting) { section = e.target.dataset.sec; setCtx(); } }); }, { rootMargin: '-40% 0px -45% 0px' });
+  $('#kpis').dataset.sec = 'kpis'; $('#chartsSection').dataset.sec = 'charts'; $('#campSection').dataset.sec = 'camp'; $('#setup').dataset.sec = 'setup';
+  [$('#kpis'), $('#chartsSection'), $('#campSection'), $('#setup')].forEach(el => io.observe(el));
+  function prompts() {
+    const p = ch === 'cross' ? 'all channels' : (plat === 'all' ? CH[ch].name : PN[plat]);
+    if (ch === 'agentic' && section !== 'setup') return ['Why does ChatGPT recommend Cosori over us?', 'Which sources does it cite for air fryers?', 'Draft a PDP update that closes the wattage gap'];
+    if (ch === 'social' && section === 'camp') return ['Which social campaigns lift branded search the most?', 'Prepare a change list to cut Meta prospecting 20%', 'What did the TikTok recipe trend do for Amazon sales?'];
+    if (ch === 'prog' && section === 'camp') return ['Which DSP audiences have the best NTB rate?', 'Shift 10% of display budget to CTV in exposed DMAs', 'Show reach & frequency by line item'];
+    if (ch === 'cross' && section === 'kpis') return ['Which channel is driving the branded search lift?', 'Rebalance budget across channels for Prime Day', 'Show the funnel from CTV reach to Amazon orders'];
+    if (!steps.ctx) return ['Connect Amazon Ads to get started', 'What can you do once a platform is connected?'];
+    if (kpi) return { Sales: ['Why did sales grow 3.8% — which ASINs?', 'Compare sales by product line for the last 4 weeks', 'Forecast sales for Prime Day at current budgets'], Spend: ['Which campaigns run out of budget before noon?', 'Shift 10% of Blender spend to Air Fryer', 'Where is spend growing fastest without sales?'], CPC: ['Why is CPC up 6.1% this week?', 'Which keywords drove the CPC increase on Walmart?', 'Lower bids 10% on terms with CPC above $1.80'], ROAS: ['Which campaigns are below 3.0 ROAS?', 'What would pausing everything under 2.0 ROAS save?', 'Break down ROAS by match type'], iROAS: ['How is the incrementality test going?', 'Which campaigns have the lowest iROAS?', 'When will the test have enough data?'], ACOS: ['Which campaigns exceed the 35% ACOS target?', 'Simulate the promo cap of 45% on current spend', 'Why did ACOS improve 0.3 pt?'] }[kpi];
+    return {
+      setup: ['Set a target ACOS of 35% for this project', 'Invite tracy@pacvue.com as an editor'],
+      kpis: [`Why did CPC rise 6.1% across ${p}?`, 'Which product line drove the sales lift?', 'Forecast next week at current budgets'],
+      charts: ['Why did spend step up on Oct 20?', 'Which tiles in the heatmap should I worry about?', 'Add a chart: CPC by match type, last 30 days'],
+      camp: [`Raise budgets 15% on the top 20 ASINs on ${p}, except ROAS below 3`, 'Which of these campaigns will run out of budget today?', 'Pause the campaigns with ACOS above 60%'],
+      overview: ['Ask about this workspace or hand off a task…']
+    }[section] || ['Ask about this workspace or hand off a task…'];
+  }
+  function setCtx() {
+    const p = ch === 'cross' ? 'Cross-channel' : (plat === 'all' ? CH[ch].name : CH[ch].name + ' · ' + PN[plat]);
+    ctxPill.textContent = 'Kitchen · ' + p + (kpi ? ' · ' + kpi : '');
+    ctxHint.textContent = kpi ? `Looking at ${kpi}` : { setup: 'Setup', kpis: 'Performance', charts: 'Charts', camp: 'Campaign list', overview: 'Overview' }[section] || 'Overview';
+    rotate(true);
+  }
+  function rotate(reset) {
+    clearTimeout(rotTimer); const list = prompts(); if (reset) rot = 0;
+    if (document.activeElement !== input || !input.value) { input.classList.add('fade'); setTimeout(() => { input.placeholder = list[rot % list.length]; input.classList.remove('fade'); }, 250); }
+    rot++; rotTimer = setTimeout(() => rotate(false), 3600);
+  }
+  document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); input.focus(); } });
+  $$('#mode button').forEach(b => b.addEventListener('click', () => $$('#mode button').forEach(x => x.setAttribute('aria-pressed', String(x === b)))));
+
+  // ---- session run
+  let timers = []; const later = (f, ms) => timers.push(setTimeout(f, ms)); function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  const A = (t, html) => `<div class="msg"><span class="av ai">A</span><div class="body"><div class="who"><b>Agent</b> · ${t}</div>${html}</div></div>`;
+  const ME = (t, text) => `<div class="msg me"><span class="av me">Z</span><div class="body"><div class="who"><b>Zoe</b> · ${t}</div><div class="text">${text}</div></div></div>`;
+  function startRun() {
+    const t = input.value.trim() || input.placeholder; if (!t || t.startsWith('Ask about')) { input.focus(); return; }
+    input.value = ''; if (!steps.ctx) { toast('Connect a platform first'); return; }
+    const act = $('#mode [data-mode="act"]').getAttribute('aria-pressed') === 'true';
+    const isQ = !act || /^(why|which|what|how|show|compare|forecast|when|where|break)/i.test(t);
+    $('#ws').hidden = true; $('#setup').hidden = true; $('#emptyWs').hidden = true; $('#thread').hidden = false; window.scrollTo({ top: 0 });
+    ctxHint.textContent = 'In session';
+    const sid = addSession(t, 'me', true);
+    const snap = () => { extra[sid] = { title: t, html: $('#thBody').innerHTML }; };
+    if (isQ) {
+      $('#thBody').innerHTML = ME('just now', t) + A('just now', `<div class="card step on"><div class="step-h">Looking it up<span class="status" id="qs">working…</span></div><ol class="plan" id="plan"><li><span class="st"></span><span><span class="tool">Insight MCP</span> get_search_terms · Kitchen · 7d vs previous 7d</span></li><li><span class="st"></span><span><span class="tool">Insight MCP</span> get_campaign_performance · by platform</span></li></ol></div><div id="ans" hidden style="display:grid;gap:10px"><p>CPC rose 6.1% overall, but almost all of it is Walmart: two broad terms ("air fryer", "kitchen appliance") went from $1.33 to $1.86 average CPC while conversion stayed flat. Amazon CPC is up only 1.2%, in line with pre-Prime Day auction pressure.</p><div class="tiles"><div class="t"><span class="lbl">Walmart CPC</span><span class="val">$1.86 <small style="color:var(--crit)">+40%</small></span></div><div class="t"><span class="lbl">Amazon CPC</span><span class="val">$1.11 <small style="color:var(--fg-3)">+1.2%</small></span></div><div class="t"><span class="lbl">Share of CPC increase</span><span class="val">Walmart 84%</span></div></div><p style="font-size:13px;color:var(--fg-2)">The change list for those two terms is already in Files (Walmart change list – Oct 25). Want me to simulate the effect of cutting their bids 20%?</p><div class="actions"><button class="btn sm" data-tab-go="files">Open the change list</button><button class="btn sm quiet" id="back2">Back to overview</button></div></div>`);
+      clearTimers(); const lis = $$('#plan li');
+      later(() => lis[0].className = 'doing', 300); later(() => { lis[0].className = 'ok'; lis[1].className = 'doing'; }, 1100); later(() => { lis[1].className = 'ok'; $('#qs').textContent = 'done · 2.1s'; $('#ans').hidden = false; $('#back2').addEventListener('click', backToOv); snap(); }, 1900);
+      return;
+    }
+    $('#thBody').innerHTML = ME('just now', t) + A('just now', `
+      <div class="card">
+        <div class="step on"><div class="step-h">My understanding<span class="status">tap any item to change it</span></div><div class="params"><span class="param"><span class="k">Platforms</span>Amazon · Walmart</span><span class="param"><span class="k">Scope</span>Top 20 ASINs by 30-day sales</span><span class="param"><span class="k">Exclude</span>14-day ROAS &lt; 3.0</span><span class="param"><span class="k">Action</span>Daily budget +15%</span><span class="param"><span class="k">Effective</span>Now · remind me to revert after the promo</span></div></div>
+        <div class="step" id="s2"><div class="step-h">Plan<span class="status" id="s2s">waiting</span></div><ol class="plan" id="plan"><li><span class="st"></span><span><span class="tool">Insight MCP</span> Top 20 ASINs by 30-day sales</span></li><li><span class="st"></span><span><span class="tool">Insight MCP</span> Map to campaigns, pull 14-day ROAS</span></li><li><span class="st"></span><span><span class="tool">Playbook MCP</span> Check daily budget cap ($4,600)</span></li><li><span class="st"></span><span><span class="tool">Guardrails</span> Domain preference · GEO · Brand safety · <b>0 conflicts</b></span></li><li><span class="st"></span><span><span class="tool">Campaign Mgmt MCP</span> Preview; apply on Amazon, change list for Walmart</span></li></ol></div>
+        <div class="step" id="s3"><div class="step-h">What changes<span class="status">Amazon 17 updated · 3 excluded · Walmart 4 as change list</span></div>
+          <div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Campaign</th><th class="n">30d sales</th><th class="n">14d ROAS</th><th class="n">Budget</th><th class="n">New</th></tr></thead><tbody>
+          <tr><td>Air Fryer – Exact</td><td class="n">$26,600</td><td class="n">5.2</td><td class="n">$70</td><td class="n">$81</td></tr>
+          <tr><td>Blender Pro – Broad</td><td class="n">$20,300</td><td class="n">4.4</td><td class="n">$170</td><td class="n">$196</td></tr>
+          <tr class="ex"><td>Kettle Auto – Phrase</td><td class="n">$18,400</td><td class="n">2.6</td><td class="n">$130</td><td class="n">— excluded</td></tr>
+          <tr><td>Toaster 4S – Exact</td><td class="n">$13,900</td><td class="n">3.9</td><td class="n">$100</td><td class="n">$115</td></tr>
+          <tr><td colspan="5" style="color:var(--fg-3);font-size:12px">… 16 more rows</td></tr></tbody></table></div>
+          <div class="actions"><button class="btn sm primary" id="confirm">Apply 17 budget changes</button><button class="btn sm">Change conditions</button><span style="font-size:12px;color:var(--fg-3)">One-click undo after applying</span></div></div>
+        <div class="step" id="s4"><div class="step-h">Done<span class="status" id="s4s"></span></div><div id="done" hidden style="display:grid;gap:10px"><p style="font-weight:600">17 Amazon budgets updated; the 4 Walmart changes are in a change list in Files. I'll remind you to revert on Nov 10.</p><div class="tiles"><div class="t"><span class="lbl">Avg. budget exhaustion (7d)</span><span class="val">13:20</span></div><div class="t"><span class="lbl">Projected after +15%</span><span class="val">19:40</span></div><div class="t"><span class="lbl">Est. extra orders / day</span><span class="val">≈ 38</span></div></div><div class="actions"><button class="btn sm">Undo</button><button class="btn sm" id="saveSkill">Save as skill + schedule before each promo</button><button class="btn sm quiet" id="back3">Back to overview</button></div></div></div>
+      </div>`);
+    clearTimers();
+    later(() => { $('#s2').classList.add('on'); $('#s2s').textContent = 'running'; }, 400);
+    const lis = $$('#plan li');
+    [0, 1, 2, 3].forEach((i, n) => { later(() => lis[i].className = 'doing', 700 + n * 600); later(() => lis[i].className = 'ok', 1200 + n * 600); });
+    later(() => { lis[4].className = 'doing'; $('#s2s').textContent = 'waiting for you'; $('#s3').classList.add('on'); snap(); }, 3300);
+    $('#confirm').addEventListener('click', () => {
+      const c = $('#confirm'); c.disabled = true; c.textContent = 'Applying…';
+      later(() => { lis[4].className = 'ok'; $('#s2s').textContent = 'done'; c.textContent = '17 budgets updated'; $('#s4').classList.add('on'); $('#done').hidden = false; $('#s4s').textContent = '6 s';
+        snap(); addAct('ai', 'Applied 17 budget changes on Amazon (your request)', 'Just now'); addAct('me', 'You handed off: "' + t.slice(0, 50) + '…"', 'Just now');
+        $('#back3').addEventListener('click', backToOv);
+        $('#saveSkill').addEventListener('click', () => {
+          const r = document.createElement('div'); r.className = 'row2 flash'; r.innerHTML = '<span>Pre-promo budget prep<small>Top 20 ASINs +15%, excluding ROAS &lt; 3; asks before applying</small></span><span class="k">saved from session</span>'; $('#skillRows').prepend(r);
+          $('#promoTask').hidden = false; const li = document.createElement('li'); li.className = 'flash'; li.innerHTML = '<span>Pre-promo budget prep<small>Trigger · 7 days before a promo</small></span><span class="k">new</span>'; $('#autoList').prepend(li);
+          $$('.tabs .cnt')[0].textContent = '6';
+          toast('Saved as skill and scheduled 7 days before each promo. See Scheduled tasks.');
+        });
+      }, 900);
+    });
+  }
+  function backToOv() { $('#thread').hidden = true; $('#setup').hidden = false; renderSetup(); clearTimers(); $$('.si').forEach(x => x.setAttribute('aria-current', String(x.id === 'sessHome'))); }
+  $('#back').addEventListener('click', backToOv);
+  $('#send').addEventListener('click', startRun);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); startRun(); } });
+
+  // ---- scheduled tasks
+  const L = (ts, src, cls, text, sub) => `<div class="l"><span class="ts">${ts}</span><span class="src ${cls || ''}">${src}</span><span class="msgt">${text}${sub ? `<small>${sub}</small>` : ''}</span></div>`;
+  const tasks = {
+    pacing: { title: 'Budget pacing', desc: 'Runs the "Budget pacing" skill every day at 11:00. Finds campaigns likely to exhaust budget early and shifts unspent budget to peak hours, within your approval rules.', facts: [['Schedule', 'Daily 11:00'], ['Skill', 'Budget pacing'], ['Approval rule', 'Budget shift ≤ $30 auto'], ['Runs', '26 · 0 failed']], runs: ['Today 11:00', 'Oct 25', 'Oct 24'],
+      log: L('11:00:02', 'scheduler', 'sys', 'Run started', 'Trigger: daily 11:00 · scope: Kitchen · Amazon') + L('11:00:04', 'insight-mcp', '', 'get_hourly_spend · 42 campaigns · today 00:00–11:00') + L('11:00:09', 'agent', 'sys', 'Found 2 campaigns above 80% of daily budget before noon; 1 campaign at 100%', 'Toaster 4S – Exact (84%), Blender Pro – Broad (81%), Air Fryer – Exact (100%)') + L('11:00:10', 'playbook-mcp', '', 'get_rules · "intraday pacing" matched', 'Shift unspent budget to the next peak window; max $30 per change without approval') + L('11:00:11', 'guardrails', 'ok', 'check_action · Domain preference, GEO, Brand safety · 0 conflicts', 'Shared services · enforced before every write') + L('11:00:12', 'campaign-mgmt', 'ok', 'update_dayparting · Toaster 4S – Exact', 'Moved $25 from 09:00–12:00 to 16:00–20:00 · within auto limit · undo until 23:59') + L('11:00:13', 'campaign-mgmt', 'ok', 'update_dayparting · Blender Pro – Broad', 'Moved $21 from 10:00–12:00 to 14:00–18:00 · within auto limit · undo until 23:59') + L('11:00:14', 'agent', 'esc', 'Escalated · Air Fryer – Exact', 'Budget already exhausted at 11:40; a raise of +$40 exceeds the $30 limit → added to Agent suggestions for Zoe') + L('11:00:15', 'memory', '', 'Applied preference: "offer a middle number first"', 'Suggestion includes a $90 trial option') + L('11:00:15', 'scheduler', 'sys', 'Run finished · 2 changes · 1 escalated · 13 s') },
+    brief: { title: 'Monday briefing', desc: 'Summarises last week, collects everything that needs a decision, and refreshes the project summary in the side panel.', facts: [['Schedule', 'Mondays 06:00'], ['Skill', 'Monday briefing'], ['Delivery', 'Overview · Slack (not connected)'], ['Runs', '4']], runs: ['Today 06:00', 'Oct 19', 'Oct 12'],
+      log: L('06:00:01', 'scheduler', 'sys', 'Run started') + L('06:00:03', 'insight-mcp', '', 'get_campaign_performance · 7d vs previous 7d · 3 platforms') + L('06:00:06', 'playbook-mcp', '', 'get_optimization_candidates · 3 rules · 4 candidates') + L('06:00:07', 'playbook-mcp', '', 'check_protection_list · 12 ASINs · 0 matches') + L('06:00:09', 'agent', 'sys', 'Wrote 4 suggestions and the project summary', 'Confidence: high ×3, medium ×1 · 1 Walmart item as change list') + L('06:00:10', 'memory', '', 'Applied preference: "no weekend Slack pings" — nothing was held back from the weekend', '') + L('06:00:11', 'scheduler', 'sys', 'Run finished · 10 s') },
+    neg: { title: 'Negative keyword cleanup', desc: 'Finds search terms with spend but no conversions and prepares negatives. Because "Negative keywords" is set to Ask me, results wait in Agent suggestions.', facts: [['Schedule', 'Mondays 06:30'], ['Skill', 'Negative keyword cleanup'], ['Approval rule', 'Ask me'], ['Runs', '7']], runs: ['Today 06:30', 'Oct 20', 'Oct 13'],
+      log: L('06:30:01', 'scheduler', 'sys', 'Run started') + L('06:30:04', 'insight-mcp', '', 'get_search_terms · 30d · spend > $7 · conversions = 0 · 41 terms') + L('06:30:06', 'memory', '', 'Applied brand context: 118 brand terms, 64 competitor terms excluded from negatives', '18 terms removed from the candidate list') + L('06:30:07', 'agent', 'esc', '23 terms waiting for approval', 'Rule "Negative keywords" = Ask me → added to Agent suggestions') + L('06:30:08', 'memory', '', 'Applied preference: include competitor-term stats (Tracy, Oct 24)') + L('06:30:08', 'scheduler', 'sys', 'Run finished · 7 s') },
+    anomaly: { title: 'ROAS anomaly', desc: 'Trigger-based. Fires when any campaign\'s daily ROAS drops more than 25% versus its 7-day average, then runs "ROAS anomaly analysis".', facts: [['Trigger', 'Daily ROAS drop > 25%'], ['Skill', 'ROAS anomaly analysis'], ['Delivery', 'Overview · Files'], ['Fires', '3']], runs: ['Oct 25 20:14', 'Oct 11', 'Oct 3'],
+      log: L('20:14:02', 'trigger', 'sys', 'Fired · Walmart "Air Fryer – Brand" · ROAS 2.9 vs 7d avg 4.1 (−29%)') + L('20:14:05', 'insight-mcp', '', 'get_search_terms · Walmart · 14d · by CPC change') + L('20:14:08', 'agent', 'sys', 'Cause: two broad terms, CPC +40%, conversion flat', '"air fryer" ROAS 1.4 · "kitchen appliance" ROAS 1.1') + L('20:14:08', 'guardrails', 'esc', 'check_action · GEO Control blocked 1 of 3 proposed changes', 'Bid raise in DMA 510 is excluded under the Walmart geo test · dropped from the list') + L('20:14:09', 'campaign-mgmt', 'esc', 'Walmart write tools not available yet', 'Produced a change list instead: bids × 0.8, pause 2 terms') + L('20:14:10', 'files', 'ok', 'Saved "Walmart change list – Oct 25.md" to Files') + L('20:14:10', 'memory', '', 'Applied instruction: "for Walmart, always produce a concrete change list"') + L('20:14:11', 'trigger', 'sys', 'Finished · 9 s · no Slack alert (not connected)') },
+    report: { title: 'Weekly performance report', desc: 'Builds the weekly PDF: KPIs, top movers, and every action the agent took, with undo links. Saved to Files and shared with project members.', facts: [['Schedule', 'Fridays 17:00'], ['Skill', 'Weekly performance report'], ['Output', 'PDF → Files'], ['Runs', '3']], runs: ['Oct 24', 'Oct 17', 'Oct 10'],
+      log: L('17:00:01', 'scheduler', 'sys', 'Run started') + L('17:00:04', 'insight-mcp', '', 'get_campaign_performance · 7d · 3 platforms') + L('17:00:06', 'agent', 'sys', 'Collected 61 agent actions this week (58 auto, 3 approved)') + L('17:00:12', 'files', 'ok', 'Saved "Weekly performance report – Oct 19–25.pdf"', 'Shared with Zoe, Tracy') + L('17:00:12', 'scheduler', 'sys', 'Run finished · 11 s') },
+    promo: { title: 'Pre-promo budget prep', desc: 'Saved from your session. Runs 7 days before each promo in the calendar and asks before applying.', facts: [['Trigger', '7 days before a promo'], ['Skill', 'Pre-promo budget prep'], ['Approval rule', 'Asks first'], ['Runs', '0 · next: Oct 30']], runs: [], log: L('—', 'scheduler', 'sys', 'No runs yet · next run Oct 30 06:00 (7 days before Prime Day)') }
+  };
+  function showTask(id) {
+    $$('#tlist [data-task]').forEach(b => b.setAttribute('aria-current', String(b.dataset.task === id)));
+    const t = tasks[id];
+    $('#tdetail').innerHTML = `<div class="hd"><div><h2>${t.title}</h2><p class="d">${t.desc}</p></div><div class="r"><button class="btn sm">Run now</button><button class="btn sm" data-tab-go="settings" data-s="skills">Edit skill</button></div></div>
+      <div class="facts">${t.facts.map(f => `<div class="f"><span class="lbl">${f[0]}</span><span>${f[1]}</span></div>`).join('')}</div>
+      <div><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><h3 style="font-size:14px">Agent action log</h3><div class="runs">${t.runs.map((r, i) => `<button aria-pressed="${i === 0}">${r}</button>`).join('')}</div></div><div class="card log">${t.log}</div></div>`;
+  }
+  $$('#tlist [data-task]').forEach(b => b.addEventListener('click', e => { if (e.target.closest('.toggle')) return; showTask(b.dataset.task); }));
+
+
+  // ================= sessions sidebar =================
+  const sessions = {
+    brief: { title: 'Monday briefing', html: () => A('Scheduled · today 06:00', `<p>Good morning. 14 things handled overnight under your rules (8 bid tweaks, 2 pacing moves, 1 negative added, all undoable). Amazon steady at 4.1 ROAS; Walmart "Air Fryer – Brand" is losing money on two broad terms; Air Fryer – Exact runs out of budget before noon. 4 decisions are waiting in the panel on the right.</p><div class="actions"><button class="btn sm" id="brOpen">Review decisions</button><button class="btn sm quiet" data-tab-go="tasks">See the run log</button></div>`) },
+    pacing: { title: 'Budget pacing', html: () => A('Scheduled · today 11:00', `<p>Checked 42 campaigns. Two were spending too fast before noon; I moved $25 and $21 of unspent budget into their afternoon peaks (both within your $30 limit). Air Fryer – Exact needed more than the limit, so I escalated it to a suggestion instead of acting.</p><div class="actions"><button class="btn sm quiet" data-tab-go="tasks">Open the action log</button></div>`) },
+    walmart: { title: 'Walmart Air Fryer – Brand: ROAS −38%', html: () => A('Triggered · yesterday 20:14', `<p>ROAS fell from 4.6 to 2.9 over two weeks. Cause: "air fryer" and "kitchen appliance" (broad) went from $1.33 to $1.86 CPC with flat conversion. I can't edit Walmart yet, so here is the change list; it is also saved in Files.</p><div class="detail" style="display:grid"><ol><li><span class="tool">Change</span><span>All keyword bids × 0.8</span></li><li><span class="tool">Pause</span><span>"air fryer" (broad)</span></li><li><span class="tool">Pause</span><span>"kitchen appliance" (broad)</span></li></ol></div><div class="actions"><button class="btn sm primary">Copy change list</button><button class="btn sm" data-expand="trend">Show it on the chart</button></div>`) },
+    tracy: { title: 'Send negative keyword results to Tracy', html: () => ME('Oct 23 15:02', 'Send Tracy last week\'s negative keyword cleanup results with the savings estimate.') + A('Oct 23 15:02', `<p>Done: 31 negatives grouped by campaign, ~$590 saved over 30 days. Slack wasn't connected then, so I saved the file to Files for you to forward.</p>`) + ME('Tracy · Oct 24 09:40', 'Thanks — can you include competitor-term stats next time?') + A('Oct 24 09:41', `<p>Added to the "Negative keyword cleanup" skill as a default output. It's in Memory as a preference.</p>`) },
+    q4: { title: 'Q4 promo budget split', html: () => ME('Tracy · Oct 19 14:10', 'Promo budget +40%. Split it across product lines by 30-day ROAS and give me a version.') + A('Oct 19 14:11', `<p>v1 by ROAS: Air Fryer 52%, Blender 28%, Kettle 12%, Toaster 8%. Given the "protect Air Fryer first" context I'd suggest v2 with Air Fryer at 60%. Both are in "Q4 promo budget split v3.xlsx".</p>`) + ME('Oct 20 10:02', 'v2 direction is right, but Kettle has a launch — don\'t squeeze it.') + A('Oct 20 10:03', `<p>v3: Air Fryer 58%, Blender 24%, Kettle 12% (launch protected), Toaster 6%. Still undecided; I'll keep it in the briefing until you confirm.</p>`) },
+    neg: { title: 'Negative keyword cleanup', html: () => A('Scheduled · Oct 20 06:30', `<p>Found 23 search terms with > $7 spend and 0 conversions in 30 days (18 more were excluded because they are brand or competitor terms). "Negative keywords" is set to Ask me, so they are waiting in your decisions.</p>`) }
+  };
+  const extra = {};
+  function openSession(id) {
+    $$('.si').forEach(b => b.setAttribute('aria-current', String(b.dataset.sess === id)));
+    const sdef = sessions[id] || extra[id]; if (!sdef) return;
+    if (sdef.chart) { openChart(sdef.chart); $('#aiChat').innerHTML = sdef.chat; return; }
+    $('#ws').hidden = true; $('#setup').hidden = true; $('#emptyWs').hidden = true; $('#thread').hidden = false; window.scrollTo({ top: 0 });
+    $('#thBody').innerHTML = `<div class="thead"><h2 style="font-size:17px">${sdef.title}</h2></div>` + (typeof sdef.html === 'function' ? sdef.html() : sdef.html);
+    const br = $('#brOpen'); if (br) br.addEventListener('click', () => { $('#sugAcc').open = true; $('#sugAcc').scrollIntoView({ behavior: 'smooth' }); });
+    $$('#thBody [data-expand]').forEach(b => b.addEventListener('click', () => openChart(b.dataset.expand)));
+    ctxHint.textContent = 'In session';
+  }
+  $$('.si[data-sess]').forEach(b => b.addEventListener('click', () => openSession(b.dataset.sess)));
+  $('#sessHome').addEventListener('click', backToOv);
+  $('#newSess').addEventListener('click', () => { backToOv(); input.focus(); });
+  let sessN = 0;
+  function addSession(title, kind, open) {
+    const id = 's' + (++sessN); const b = document.createElement('button'); b.className = 'si new'; b.dataset.sess = id;
+    b.innerHTML = `<span class="t">${title}</span><span class="m"><i class="dot ${kind === 'chart' ? 'chart' : 'me'}"></i>${kind === 'chart' ? 'Chart conversation' : 'You'} · just now</span>`;
+    $('#sessToday').prepend(b); b.addEventListener('click', () => openSession(id)); if (open) $$('.si').forEach(x => x.setAttribute('aria-current', String(x === b)));
+    return id;
+  }
+
+  // ================= charts =================
+  const rnd = i => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+  const DAYS = 30, dayLabel = i => { const d = new Date(2026, 8, 26 + i); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+  const PL = { amazon: { spend: 20000, sales: 86000, cpc: 1.1, name: 'Amazon', ch: 'retail' }, walmart: { spend: 5200, sales: 17500, cpc: 1.4, name: 'Walmart', ch: 'retail' }, adsp: { spend: 4100, sales: 11500, cpc: 2.5, name: 'Amazon DSP', ch: 'prog' }, roku: { spend: 1900, sales: 1800, cpc: 6, name: 'Roku', ch: 'prog' }, tiktok: { spend: 1700, sales: 2600, cpc: 0.4, name: 'TikTok', ch: 'social' }, meta: { spend: 1300, sales: 1500, cpc: 0.6, name: 'Meta', ch: 'social' }, google: { spend: 2000, sales: 6900, cpc: 0.24, name: 'Google Ads', ch: 'search' } };
+  const series = {};
+  Object.keys(PL).forEach((k, pi) => {
+    const b = PL[k]; series[k] = [];
+    for (let i = 0; i < DAYS; i++) {
+      const wk = 1 + 0.08 * Math.sin((i + pi) * 2 * Math.PI / 7), trend = 1 + i * 0.006, noise = 0.94 + 0.12 * rnd(i * 7 + pi * 31);
+      let spend = b.spend * wk * trend * noise, sales = b.sales * wk * (1 + (i - 1) * 0.0055) * (0.93 + 0.14 * rnd(i * 3 + pi * 17)), cpc = b.cpc * (0.95 + 0.1 * rnd(i * 5 + pi));
+      if (k === 'amazon' && i >= 24) { spend *= 1.08; sales *= i >= 25 ? 1.06 : 1.0; }
+      if (k === 'walmart' && i >= 26) { cpc *= 1.4; sales *= 0.8; }
+      series[k].push({ spend, sales, cpc, clicks: spend / cpc });
+    }
+  });
+  function agg(plat, i) { const ks = plat === 'all' ? Object.keys(PL) : CH[plat] ? Object.keys(PL).filter(k => PL[k].ch === plat) : [plat]; const o = { spend: 0, sales: 0, clicks: 0 }; ks.forEach(k => { o.spend += series[k][i].spend; o.sales += series[k][i].sales; o.clicks += series[k][i].clicks; }); o.roas = o.sales / o.spend; o.cpc = o.spend / o.clicks; o.acos = o.spend / o.sales * 100; return o; }
+  const fmt = { spend: v => '$' + (v >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(0)), sales: v => '$' + (v / 1000).toFixed(0) + 'K', roas: v => v.toFixed(2), cpc: v => '$' + v.toFixed(2), acos: v => v.toFixed(1) + '%' };
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function el(n, a, t) { const e = document.createElementNS(svgNS, n); Object.entries(a || {}).forEach(([k, v]) => e.setAttribute(k, v)); if (t != null) e.textContent = t; return e; }
+
+  function renderTrend(c, p, big) {
+    const W = c.clientWidth - (big ? 20 : 0) || 420, H = c.clientHeight - (big ? 20 : 0) || 190, padL = 46, padR = 14, padT = 14, padB = 24;
+    const n = p.range, start = DAYS - n;
+    const metrics = p.metric === 'both' ? ['spend', 'sales'] : [p.metric];
+    const groups = p.breakdown === 'platform' && p.plat === 'all' ? Object.keys(PL) : p.breakdown === 'channel' && p.plat === 'all' ? ['retail', 'prog', 'social', 'search'] : p.breakdown === 'platform' && CH[p.plat] ? Object.keys(PL).filter(k => PL[k].ch === p.plat) : [p.plat];
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'cs', preserveAspectRatio: 'none' });
+    const lines = []; let max = 0;
+    metrics.forEach(m => groups.forEach(g => { const pts = []; for (let i = start; i < DAYS; i++) { const v = agg(g, i)[m]; pts.push(v); max = Math.max(max, v); } lines.push({ m, g, pts }); if (p.compare) { const prev = []; for (let i = start - n; i < start; i++) { if (i < 0) prev.push(null); else { const v = agg(g, i)[m]; prev.push(v); max = Math.max(max, v); } } lines.push({ m, g, pts: prev, prev: true }); } }));
+    if (p.metric === 'both') { /* two axes: normalise sales to spend scale */ const sMax = Math.max(...lines.filter(l => l.m === 'sales').flatMap(l => l.pts.filter(v => v != null))); const pMax = Math.max(...lines.filter(l => l.m === 'spend').flatMap(l => l.pts.filter(v => v != null))); lines.forEach(l => { if (l.m === 'sales') l.pts = l.pts.map(v => v == null ? null : v / sMax * pMax); }); max = pMax; lines._sMax = sMax; }
+    max *= 1.1;
+    const x = i => padL + i * (W - padL - padR) / (n - 1), y = v => padT + (H - padT - padB) * (1 - v / max);
+    [0, .5, 1].forEach(f => { svg.appendChild(el('line', { class: 'grid', x1: padL, x2: W - padR, y1: y(max * f), y2: y(max * f) })); svg.appendChild(el('text', { x: 4, y: y(max * f) + 3 }, (fmt[metrics[0]] || (v => v))(max * f))); });
+    const stepL = n > 14 ? 5 : n > 7 ? 2 : 1; for (let i = 0; i < n; i += stepL) svg.appendChild(el('text', { x: x(i) - 12, y: H - 6 }, dayLabel(start + i)));
+    const colors = { amazon: 'var(--accent)', walmart: 'var(--warn)', tiktok: 'var(--crit)', meta: '#7a5af5', adsp: '#2b8a9e', roku: '#9e2b7a', google: '#c99a1a', all: 'var(--accent)', retail: 'var(--accent)', prog: '#2b8a9e', social: 'var(--crit)', search: '#c99a1a' };
+    const gname = g => g === 'all' ? '' : (CH[g] ? CH[g].name : PL[g].name) + ' ';
+    lines.forEach(l => { const d = l.pts.map((v, i) => v == null ? null : `${x(i)},${y(v)}`).filter(Boolean).join(' '); if (!d) return; const multi = groups.length > 1; const col = l.m === 'sales' && p.metric === 'both' && !multi ? 'var(--good)' : colors[l.g]; const dash = l.prev ? '4 3' : (l.m === 'sales' && p.metric === 'both' && multi ? '2 3' : '');
+      if (l.m === 'spend' && p.metric === 'both' && !l.prev) { const area = el('polygon', { points: `${x(0)},${y(0)} ${d} ${x(n - 1)},${y(0)}`, fill: col, opacity: .08 }); svg.appendChild(area); }
+      svg.appendChild(el('polyline', { points: d, fill: 'none', stroke: col, 'stroke-width': l.prev ? 1.2 : 2, 'stroke-dasharray': dash, opacity: l.prev ? .6 : 1 })); });
+    (p.ann || []).forEach(a => { const i = a.day - start; if (i < 0 || i >= n) return; svg.appendChild(el('line', { class: 'ann', x1: x(i), x2: x(i), y1: padT, y2: H - padB })); svg.appendChild(el('text', { class: 'annt', x: x(i) + 4, y: padT + 10 }, a.text)); });
+    c.innerHTML = ''; c.appendChild(svg);
+    const multi = groups.length > 1; const seen = new Set();
+    const items = lines.filter(l => !l.prev).map(l => { const txt = gname(l.g) + (l.m === 'sales' && p.metric === 'both' ? (multi ? 'sales (dashed, right scale)' : 'Sales (right scale)') : l.m.toUpperCase()); const col = l.m === 'sales' && p.metric === 'both' && !multi ? 'var(--good)' : colors[l.g]; if (seen.has(txt)) return ''; seen.add(txt); return `<span><i style="background:${col}"></i>${txt}</span>`; }).join('');
+    return { legend: items + (p.compare ? '<span><i style="background:var(--fg-3);opacity:.5"></i>Previous period (dashed)</span>' : '') };
+  }
+
+  const CAMPS = [
+    ['Air Fryer – Exact', 'amazon', 'Air Fryer', 3240, 5.2, 0.04, 19], ['Air Fryer – Auto', 'amazon', 'Air Fryer', 2910, 3.1, -0.02, 32], ['Blender Pro – Broad', 'amazon', 'Blender', 2480, 4.4, 0.06, 23], ['Air Fryer – Brand', 'walmart', 'Air Fryer', 2120, 2.9, -0.37, 34], ['Toaster 4S – Exact', 'amazon', 'Toaster', 1760, 3.9, 0.01, 26], ['Blender – Broad (legacy)', 'amazon', 'Blender', 1420, 1.4, -0.12, 71], ['Air Fryer Recipes – Spark', 'tiktok', 'Air Fryer', 1180, 2.2, 0.15, 45], ['Kettle Auto – Phrase', 'amazon', 'Kettle', 1050, 2.6, -0.05, 38], ['Air Fryer – SB Video', 'amazon', 'Air Fryer', 980, 3.6, 0.09, 28], ['Kettle – Exact', 'amazon', 'Kettle', 760, 3.3, 0.02, 30], ['Blender Mini – Auto', 'amazon', 'Blender', 640, 2.2, -0.08, 45], ['Toaster – Broad', 'amazon', 'Toaster', 520, 2.8, 0.03, 36], ['Air Fryer – Auto', 'walmart', 'Air Fryer', 480, 3.4, -0.06, 29], ['Blender – Brand', 'walmart', 'Blender', 410, 3.8, 0.02, 26], ['Kettle Descaler – Exact', 'amazon', 'Kettle', 330, 1.9, -0.14, 53], ['Toaster – Spark', 'tiktok', 'Toaster', 300, 1.8, 0.21, 55], ['Air Fryer – SD', 'amazon', 'Air Fryer', 290, 4.9, 0.11, 20], ['Blender – SB', 'amazon', 'Blender', 260, 3.0, 0.0, 33], ['Air Fryer – Prospecting (DSP)', 'adsp', 'Air Fryer', 3860, 2.4, 0.07, 41], ['CTV – Holiday teaser', 'roku', 'Air Fryer', 2400, 0.8, 0.12, 120], ['Air Fryer – Advantage+', 'meta', 'Air Fryer', 2050, 1.1, -0.04, 89], ['Shopping – Air Fryer', 'google', 'Air Fryer', 1720, 3.4, 0.02, 29]
+  ].map(a => ({ name: a[0], plat: a[1], line: a[2], spend: a[3], roas: a[4], d: a[5], acos: a[6], sales: a[3] * a[4] }));
+  function renderHeat(c, p, big) {
+    const list = CAMPS.filter(x => p.plat === 'all' || x.plat === p.plat || PL[x.plat].ch === p.plat);
+    const sizeKey = p.sizeBy, total = list.reduce((a, x) => a + x[sizeKey], 0);
+    const wrap = document.createElement('div'); wrap.className = 'heat';
+    const rowH = big ? 92 : 68;
+    list.sort((a, b) => b[sizeKey] - a[sizeKey]).forEach(x => {
+      let v, col; if (p.colorBy === 'roasDelta') { v = Math.max(-0.4, Math.min(0.4, x.d)); col = v >= 0 ? `color-mix(in srgb, var(--good) ${Math.round(v / 0.4 * 70)}%, var(--surface-2))` : `color-mix(in srgb, var(--crit) ${Math.round(-v / 0.4 * 70)}%, var(--surface-2))`; }
+      else if (p.colorBy === 'acos') { v = x.acos; col = v <= 35 ? `color-mix(in srgb, var(--good) ${Math.round((35 - v) / 35 * 70)}%, var(--surface-2))` : `color-mix(in srgb, var(--crit) ${Math.min(70, Math.round((v - 35) / 35 * 70))}%, var(--surface-2))`; }
+      else { v = x.roas; col = v >= 3.5 ? `color-mix(in srgb, var(--good) ${Math.min(70, Math.round((v - 3.5) / 2 * 70))}%, var(--surface-2))` : `color-mix(in srgb, var(--crit) ${Math.min(70, Math.round((3.5 - v) / 2.5 * 70))}%, var(--surface-2))`; }
+      const share = x[sizeKey] / total; const t = document.createElement('div'); t.className = 'tile' + (p.hl && p.hl === x.name ? ' hl' : ''); t.style.background = col; t.style.flex = `${share * 100} 1 ${Math.max(big ? 70 : 60, share * (big ? 1800 : 1400))}px`; t.style.height = (share > 0.12 ? rowH * 2 + 3 : rowH) + 'px';
+      const lab = p.colorBy === 'roasDelta' ? (x.d >= 0 ? '+' : '') + Math.round(x.d * 100) + '%' : p.colorBy === 'acos' ? x.acos + '%' : x.roas.toFixed(1);
+      t.innerHTML = `<b>${x.name}</b><small>${PL[x.plat].name} · ${lab}</small>${big ? `<small>${fmt.spend(x.spend)} · ROAS ${x.roas.toFixed(1)}</small>` : ''}`; t.title = x.name;
+      wrap.appendChild(t);
+    });
+    c.innerHTML = ''; c.appendChild(wrap);
+    return { legend: `<span><i style="background:color-mix(in srgb, var(--crit) 60%, var(--surface-2))"></i>${p.colorBy === 'roasDelta' ? 'ROAS down vs previous 7d' : p.colorBy === 'acos' ? 'ACOS above 35% target' : 'ROAS below 3.5'}</span><span><i style="background:color-mix(in srgb, var(--good) 60%, var(--surface-2))"></i>${p.colorBy === 'roasDelta' ? 'ROAS up' : p.colorBy === 'acos' ? 'ACOS below target' : 'ROAS above 3.5'}</span><span>Size = ${sizeKey} 7d</span>` };
+  }
+
+  const PACE = { 'Air Fryer – Exact': { budget: 70, out: 11.7 }, 'Air Fryer – Auto': { budget: 280, out: null }, 'Blender Pro – Broad': { budget: 170, out: null }, 'Toaster 4S – Exact': { budget: 100, out: 17.5 }, 'Kettle Auto – Phrase': { budget: 130, out: null } };
+  function renderPace(c, p, big) {
+    const W = c.clientWidth - (big ? 20 : 0) || 420, H = c.clientHeight - (big ? 20 : 0) || 190, padL = 40, padR = 14, padT = 14, padB = 24; const cp = PACE[p.camp], B = cp.budget;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'cs', preserveAspectRatio: 'none' });
+    const x = h => padL + h * (W - padL - padR) / 24, y = v => padT + (H - padT - padB) * (1 - v / (B * (p.what ? 1.26 : 1.08)));
+    [0, .5, 1].forEach(f => { svg.appendChild(el('line', { class: 'grid', x1: padL, x2: W - padR, y1: y(B * f), y2: y(B * f) })); svg.appendChild(el('text', { x: 4, y: y(B * f) + 3 }, '$' + Math.round(B * f))); });
+    [0, 6, 12, 18, 24].forEach(h => svg.appendChild(el('text', { x: x(h) - 8, y: H - 6 }, String(h).padStart(2, '0') + ':00')));
+    svg.appendChild(el('line', { x1: x(0), y1: y(0), x2: x(24), y2: y(B), stroke: 'var(--fg-3)', 'stroke-dasharray': '4 3', 'stroke-width': 1.2 }));
+    svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: y(B), y2: y(B), stroke: 'var(--crit)', 'stroke-width': 1, opacity: .6 })); svg.appendChild(el('text', { x: W - padR - 70, y: y(B) - 4, style: 'fill:var(--crit)' }, 'daily budget'));
+    const pts = []; const end = cp.out || 14.5; const curve = h => B * Math.pow(Math.min(h, end) / end, 0.85) * (cp.out ? 1 : 0.62);
+    for (let h = 0; h <= 24; h += 0.5) { if (h > 14.5 && !cp.out) break; pts.push(`${x(h)},${y(curve(h))}`); }
+    svg.appendChild(el('polygon', { points: `${x(0)},${y(0)} ${pts.join(' ')} ${pts[pts.length - 1].split(',')[0]},${y(0)}`, fill: 'var(--accent)', opacity: .1 }));
+    svg.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.2 }));
+    if (cp.out) { svg.appendChild(el('line', { class: 'ann', x1: x(cp.out), x2: x(cp.out), y1: padT, y2: H - padB })); svg.appendChild(el('text', { class: 'annt', x: x(cp.out) + 4, y: padT + 10 }, `exhausted ${Math.floor(cp.out)}:${String(Math.round((cp.out % 1) * 60)).padStart(2, '0')}`)); }
+    else { svg.appendChild(el('text', { x: x(14.5) + 4, y: y(curve(14.5)) - 4, style: 'fill:var(--accent)' }, 'now · on pace')); }
+    if (p.what) { const pts2 = []; const B2 = B * 1.15; for (let h = 0; h <= 24; h += 0.5) pts2.push(`${x(h)},${y(Math.min(B2, B2 * Math.pow(h / 19.7, 0.85)))}`); svg.appendChild(el('polyline', { points: pts2.join(' '), fill: 'none', stroke: 'var(--good)', 'stroke-width': 1.6, 'stroke-dasharray': '5 3' })); svg.appendChild(el('text', { x: x(19.7) - 60, y: y(B2) - 6, style: 'fill:var(--good)' }, 'with +15% → ~19:40')); }
+    c.innerHTML = ''; c.appendChild(svg);
+    return { legend: `<span><i style="background:var(--accent)"></i>Cumulative spend</span><span><i style="background:var(--fg-3)"></i>Even pace</span>${p.what ? '<span><i style="background:var(--good)"></i>Simulated +15% budget</span>' : ''}` };
+  }
+
+  const SOV = { amazon: { all: [['You', 23, -3], ['Cosori', 21, 3], ['Ninja', 19, 0], ['Instant', 12, 1], ['Others', 25, -1]], evening: [['You', 18, -6], ['Cosori', 27, 6], ['Ninja', 18, 0], ['Instant', 11, 0], ['Others', 26, 0]] }, walmart: { all: [['You', 31, 1], ['Ninja', 24, -1], ['Cosori', 14, 2], ['Chefman', 10, -1], ['Others', 21, -1]], evening: [['You', 29, 0], ['Ninja', 25, 0], ['Cosori', 15, 1], ['Chefman', 10, 0], ['Others', 21, -1]] } };
+  function renderSov(c, p, big) {
+    const rows = SOV[p.plat === 'all' || p.plat === 'tiktok' ? 'amazon' : p.plat][p.slot]; const W = c.clientWidth - (big ? 20 : 0) || 420, H = c.clientHeight - (big ? 20 : 0) || 190, rowH = (H - 10) / rows.length, padL = big ? 90 : 60;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'cs', preserveAspectRatio: 'none' });
+    rows.forEach((r, i) => { const yy = 6 + i * rowH; const w = r[1] / 35 * (W - padL - 90); svg.appendChild(el('text', { x: 4, y: yy + rowH / 2 + 3, style: r[0] === 'You' ? 'fill:var(--fg);font-weight:600' : '' }, r[0])); svg.appendChild(el('rect', { x: padL, y: yy + 4, width: w, height: rowH - 8, rx: 3, fill: r[0] === 'You' ? 'var(--accent)' : 'var(--surface-2)' })); svg.appendChild(el('text', { x: padL + w + 6, y: yy + rowH / 2 + 3, style: 'fill:var(--fg)' }, r[1] + '%')); svg.appendChild(el('text', { x: padL + w + 44, y: yy + rowH / 2 + 3, style: `fill:${r[2] > 0 ? 'var(--good)' : r[2] < 0 ? 'var(--crit)' : 'var(--fg-3)'}` }, (r[2] > 0 ? '+' : '') + r[2] + ' pt')); });
+    c.innerHTML = ''; c.appendChild(svg);
+    return { legend: `<span><i style="background:var(--accent)"></i>Your share of top-of-search impressions</span><span>Δ vs previous 7 days</span>` };
+  }
+
+  const charts = {
+    trend: { title: 'Spend & sales', sub: 'Daily · all channels', render: renderTrend, p: { metric: 'both', range: 14, plat: 'all', breakdown: 'total', compare: false, ann: [{ day: 24, text: 'Oct 20 · pacing rule change' }] },
+      params: [['metric', 'Metric', { both: 'Spend + Sales', spend: 'Spend', sales: 'Sales', roas: 'ROAS', cpc: 'CPC', acos: 'ACOS' }], ['range', 'Range', { 7: '7 days', 14: '14 days', 30: '30 days' }], ['plat', 'Channel / platform', { all: 'All channels', retail: 'Retail', prog: 'Programmatic', social: 'Social & Discovery', search: 'Paid search', amazon: 'Amazon', walmart: 'Walmart', adsp: 'Amazon DSP', tiktok: 'TikTok', meta: 'Meta', google: 'Google Ads' }], ['breakdown', 'Break down', { total: 'Total', channel: 'By channel', platform: 'By platform' }], ['compare', 'Compare', { false: 'Off', true: 'Previous period' }]],
+      chips: ['Why did spend step up on Oct 20?', 'What happened to Walmart on Oct 22?', 'Compare with the previous period', 'Show ROAS by platform for 30 days'],
+      intro: 'Spend stepped up 8% on Oct 20 when the pacing rule started shifting unspent budget into peak hours. Sales followed a day later. Walmart sales dipped from Oct 22 as two broad terms got expensive.' },
+    heat: { title: 'Campaign heatmap', sub: 'Size = spend 7d · colour = change', render: renderHeat, p: { sizeBy: 'spend', colorBy: 'roasDelta', plat: 'all' },
+      params: [['sizeBy', 'Size by', { spend: 'Spend', sales: 'Sales' }], ['colorBy', 'Colour by', { roasDelta: 'ROAS Δ vs prev 7d', acos: 'ACOS vs 35% target', roas: 'ROAS level' }], ['plat', 'Channel', { all: 'All channels', retail: 'Retail', prog: 'Programmatic', social: 'Social & Discovery', search: 'Paid search' }]],
+      chips: ['Which tiles should I worry about?', 'Colour by ACOS instead', 'Show only Amazon', 'Why is Walmart Air Fryer – Brand red?'],
+      intro: 'Two tiles are worth your attention: Walmart "Air Fryer – Brand" (ROAS −37%, $2.1K/week) and the Blender legacy campaign (ACOS 71%, pause suggested). The green on the Air Fryer line is the promo build-up.' },
+    pace: { title: 'Budget pacing today', sub: 'Cumulative spend vs. even pace', render: renderPace, p: { camp: 'Air Fryer – Exact', what: false },
+      params: [['camp', 'Campaign', Object.fromEntries(Object.keys(PACE).map(k => [k, k]))], ['what', 'Simulate', { false: 'None', true: '+15% budget' }]],
+      chips: ['What if I raise the budget 15%?', 'Show Toaster 4S – Exact', 'Why does it run out before noon?', 'Raise this budget to $110'],
+      intro: 'Air Fryer – Exact has exhausted its $70 budget at 11:40 for five days straight. Every hour after that is lost impressions on your best-converting campaign. A raise to $110 is in your suggestions.' },
+    sov: { title: 'Share of voice · "air fryer"', sub: 'Top-of-search impressions', render: renderSov, p: { plat: 'amazon', slot: 'all' },
+      params: [['plat', 'Platform', { amazon: 'Amazon', walmart: 'Walmart' }], ['slot', 'Daypart', { all: 'All day', evening: '18:00–22:00' }]],
+      chips: ['Where did I lose share?', 'Show the evening daypart', 'What would it cost to get back to 26%?', 'Show Walmart'],
+      intro: 'You hold 23% of top-of-search for "air fryer" on Amazon, down 3 pts. The loss is concentrated between 18:00 and 22:00, where Cosori is now ahead of you — and where your Exact campaign has already run out of budget.' }
+  };
+  function renderSmall() { Object.keys(charts).forEach(k => charts[k].render($('#c-' + k), charts[k].p, false)); }
+  renderSmall();
+  let rsT; new ResizeObserver(() => { clearTimeout(rsT); rsT = setTimeout(() => { renderSmall(); if (cur) drawBig(); }, 120); }).observe($('#chartsSection'));
+  let cur = null;
+  function openChart(k) {
+    cur = k; const c = charts[k]; $('#mTitle').textContent = c.title; $('#mSub').textContent = c.sub;
+    const P = $('#mParams'); P.innerHTML = '';
+    c.params.forEach(([key, label, opts]) => { const w = document.createElement('span'); w.className = 'param'; w.innerHTML = `<span class="k">${label}</span>`; const sel = document.createElement('select'); Object.entries(opts).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (String(c.p[key]) === v) o.selected = true; sel.appendChild(o); }); sel.addEventListener('change', () => { c.p[key] = sel.value === 'true' ? true : sel.value === 'false' ? false : isNaN(sel.value) ? sel.value : Number(sel.value); drawBig(); }); w.appendChild(sel); P.appendChild(w); });
+    $('#aiChat').innerHTML = `<div class="a"><span>${c.intro}</span></div>`;
+    $('#aiChips').innerHTML = c.chips.map(q => `<button>${q}</button>`).join(''); $$('#aiChips button').forEach(b => b.addEventListener('click', () => askChart(b.textContent)));
+    $('#modal').hidden = false; drawBig();
+  }
+  function drawBig() { const c = charts[cur]; const r = c.render($('#mChart'), c.p, true); $('#mLegend').innerHTML = r.legend || ''; c.render($('#c-' + cur), c.p, false); $$('#mParams select').forEach(sel => { const key = c.params[Array.from(sel.closest('.params').children).indexOf(sel.closest('.param'))][0]; sel.value = String(c.p[key]); }); }
+  function askChart(q) {
+    const c = charts[cur]; const chat = $('#aiChat'); asked++; chat.insertAdjacentHTML('beforeend', `<div class="q">${q}</div>`); const l = q.toLowerCase(); let a = '', act = '';
+    if (cur === 'trend') {
+      if (l.includes('oct 20') || l.includes('step') || l.includes('jump')) { c.p.ann = [{ day: 24, text: 'Oct 20 · pacing rule change' }]; c.p.metric = 'spend'; c.p.breakdown = 'platform'; a = 'On Oct 20 the "Budget pacing" task started moving unspent morning budget into 14:00–20:00. Amazon spend rose 8% ($1.6K/day) with no change to daily budgets; the extra spend converted at 4.3 ROAS, so sales caught up the next day. I split the line by platform so you can see it is Amazon only.'; act = '<button class="btn sm" data-tab-go="tasks">Open the pacing task log</button>'; }
+      else if (l.includes('walmart') || l.includes('oct 22')) { c.p.plat = 'walmart'; c.p.metric = 'cpc'; c.p.range = 14; c.p.ann = [{ day: 26, text: 'Oct 22 · broad-term CPC +40%' }]; a = 'Switched to Walmart CPC. From Oct 22, "air fryer" and "kitchen appliance" (broad) went from $1.33 to $1.86 average CPC while conversion stayed flat — that is the whole ROAS drop. The change list is in Files.'; act = '<button class="btn sm" data-tab-go="files">Open the change list</button>'; }
+      else if (l.includes('compare') || l.includes('previous')) { c.p.compare = true; a = 'Added the previous period as dashed lines. Spend is up 4.2% and sales 3.8% period over period; the gap opens after Oct 20.'; }
+      else if (l.includes('roas') && l.includes('platform')) { c.p.metric = 'roas'; c.p.breakdown = 'platform'; c.p.range = 30; c.p.plat = 'all'; a = 'ROAS by platform, 30 days. Amazon sits between 4.0 and 4.5; Walmart was 3.3–3.6 until Oct 22 and has fallen since; TikTok is low but read-only, so I would not read much into it.'; }
+      else a = 'Here is what I see on this chart: spend $183K and sales $751K over the range, ROAS 4.10. The two things worth your attention are the Oct 20 step-up (good, from pacing) and Walmart since Oct 22 (bad, from CPC). Ask me to zoom into either, or change the parameters above.';
+    } else if (cur === 'heat') {
+      const hit = CAMPS.find(x => l.includes(x.name.toLowerCase()));
+      if (l.startsWith('why is') && hit) { c.p.hl = hit.name; a = `${hit.name} (${PL[hit.plat].name}): $${hit.spend.toLocaleString()} spend in 7 days, ROAS ${hit.roas.toFixed(1)} (${hit.d >= 0 ? '+' : ''}${Math.round(hit.d * 100)}% vs the previous 7 days), ACOS ${hit.acos}%. ` + (hit.d < -0.1 ? 'The drop comes from rising CPC on broad terms with flat conversion.' : hit.d > 0.1 ? 'The gain is promo build-up on the Air Fryer line; conversion rate is up, CPC flat.' : 'Nothing unusual — within normal weekly variance.'); }
+      else if (l.includes('worry') || l.includes('attention')) { c.p.colorBy = 'roasDelta'; c.p.hl = 'Air Fryer – Brand'; a = 'Only one red tile is big enough to matter: Walmart "Air Fryer – Brand" (ROAS −37% on $2.1K/week). The Blender legacy campaign is also red but it is a $1.4K/week tile with a pause already suggested. Everything else red is under $400/week.'; act = '<button class="btn sm" id="hlSug">Open the Walmart suggestion</button>'; }
+      else if (l.includes('acos')) { c.p.colorBy = 'acos'; a = 'Recoloured by ACOS against your 35% target. Three tiles exceed it meaningfully: Blender legacy (71%), Kettle Descaler (53%) and Toaster – Spark on TikTok (55%, read-only).'; }
+      else if (l.includes('amazon')) { c.p.plat = 'amazon'; a = 'Amazon only. The Air Fryer line is green across the board going into Prime Day; Blender legacy and Kettle Descaler are the two tiles to clean up.'; }
+      else if (l.includes('walmart')) { c.p.hl = 'Air Fryer – Brand'; a = 'Its two broad terms got 40% more expensive from Oct 22 with no lift in conversion. I can\'t edit Walmart yet; the change list (bids ×0.8, pause two terms) is ready to copy.'; }
+      else a = 'Size is 7-day spend, colour is ROAS change versus the previous 7 days. Try "colour by ACOS" or "show only Amazon", or click a tile to highlight it.';
+    } else if (cur === 'pace') {
+      if (l.includes('15%') || l.includes('what if') || l.includes('raise')) { c.p.what = true; a = 'Simulated +15% ($80.5/day): the campaign would run until about 19:40 instead of 11:40, roughly 38 extra orders/day at the current 5.2 ROAS. A +$40 raise to $110 would reach the evening peak fully — that is the suggestion waiting for you.'; act = '<button class="btn sm" id="hlSug2">Open the budget suggestion</button>'; }
+      else if (l.includes('toaster')) { c.p.camp = 'Toaster 4S – Exact'; c.p.what = false; a = 'Toaster 4S – Exact runs out around 17:30. The pacing task already moved $25 of its morning budget into 16:00–20:00 today.'; }
+      else if (l.includes('before noon') || l.includes('why')) { a = 'Three reasons: a $70 budget against $3.2K/week of demand, bids that are competitive enough to win early-morning traffic, and no dayparting. Raising the budget is the direct fix; dayparting alone would just move the exhaustion later.'; }
+      else a = 'Pick a campaign above or ask "what if I raise the budget 15%" to see the simulation.';
+    } else if (cur === 'sov') {
+      if (l.includes('lose') || l.includes('where')) { c.p.slot = 'evening'; a = 'The loss is in 18:00–22:00: you drop to 18% while Cosori rises to 27%. That window is exactly when Air Fryer – Exact has already exhausted its budget, so the two charts are the same story.'; }
+      else if (l.includes('evening')) { c.p.slot = 'evening'; a = 'Evening daypart shown.'; }
+      else if (l.includes('walmart')) { c.p.plat = 'walmart'; a = 'On Walmart you lead at 31% and are stable. The ROAS problem there is cost, not visibility.'; }
+      else if (l.includes('cost') || l.includes('26%')) { a = 'Getting back to 26% all-day share needs roughly +$55/day on Air Fryer – Exact and a 6–8% bid lift on the top 5 exact terms. Estimated at 4.6 ROAS. I can prepare this as a suggestion.'; act = '<button class="btn sm">Prepare as a suggestion</button>'; }
+      else a = 'Share of top-of-search impressions for the "air fryer" keyword group. Ask "where did I lose share" to see the daypart split.';
+    }
+    chat.insertAdjacentHTML('beforeend', `<div class="a"><span>${a}</span>${act ? `<div class="act">${act}</div>` : ''}</div>`); chat.scrollTop = chat.scrollHeight; drawBig();
+    const h1 = $('#hlSug'), h2 = $('#hlSug2'); if (h1) h1.addEventListener('click', () => { closeModal(); openDrawer($('.sug[data-id="p4"]')); }); if (h2) h2.addEventListener('click', () => { closeModal(); openDrawer($('.sug[data-id="p2"]')); });
+  }
+  let asked = 0;
+  function closeModal() {
+    if (cur && asked && !charts[cur]._sid) { const sid = addSession('Chart: ' + charts[cur].title, 'chart', false); extra[sid] = { chart: cur, chat: $('#aiChat').innerHTML, title: charts[cur].title }; charts[cur]._sid = sid; toast('Saved this chart conversation to Sessions'); }
+    else if (cur && charts[cur]._sid) extra[charts[cur]._sid].chat = $('#aiChat').innerHTML;
+    $('#modal').hidden = true; cur = null; asked = 0;
+  }
+  $$('[data-expand]').forEach(b => b.addEventListener('click', () => openChart(b.dataset.expand)));
+  $('#mClose').addEventListener('click', closeModal); $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
+  $('#aiSend').addEventListener('click', () => { const v = $('#aiInput').value.trim(); if (v) { $('#aiInput').value = ''; askChart(v); } });
+  $('#aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#aiSend').click(); } });
+  $('#addChart').addEventListener('click', () => toast('Add chart: describe it in the input below, e.g. "CPC by match type, last 30 days" — the agent builds it and pins it here'));
+  document.addEventListener('click', e => { const t = e.target.closest('.tile'); if (t && cur === 'heat') { charts.heat.p.hl = t.title; drawBig(); askChart('Why is ' + t.title + ' ' + (t.textContent.includes('-') ? 'red' : 'green') + '?'); } });
+
+  showTask('pacing');
+  renderKpis(); renderSetup(); placeAsk();
+  $('#newTask').addEventListener('click', () => toast('New task = pick a skill + a schedule or trigger, e.g. "Run Pre-promo budget prep 7 days before each promo"'));
+})();
+</script>
+
+</body>
+</html>
