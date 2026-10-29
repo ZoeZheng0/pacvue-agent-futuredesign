@@ -2,30 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Pacvue Agent Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body>
 <style>
 /* Layout: project header + 4 tabs. Overview = setup checklist → KPI/campaign workspace with AI suggestions, collapsible context rail on the right, a floating AI input pinned above the bottom edge. */
 :root {
-  --bg: #fafaf9; --surface: #ffffff; --surface-2: #f1f1ef; --fg: #1c1c1a; --fg-2: #55554f; --fg-3: #8a8a82; --line: #e4e4df;
-  --accent: #1f6f6a; --accent-soft: #e3f0ee; --accent-fg: #ffffff;
-  --good: #1f8a5b; --good-soft: #e1f3ea; --warn: #b7700b; --warn-soft: #fbefd9; --crit: #c2402e; --crit-soft: #fae4e0;
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f4f4f2; --surface-3: #ebebe8; --fg: #1f1e1b; --fg-2: #4b4a46; --fg-3: #7d7b76; --line: #dcdcd8;
+  --accent: #2383e2; --accent-soft: #e9f2fc; --accent-fg: #ffffff;
+  --good: #448361; --good-soft: #edf3ec; --warn: #cb912f; --warn-soft: #fbf3db; --crit: #d44c47; --crit-soft: #fdebec;
   --font-ui: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", Menlo, Consolas, monospace;
   --radius: 12px; --shadow: 0 1px 2px rgba(28,28,26,.05), 0 6px 20px rgba(28,28,26,.06); --shadow-lg: 0 4px 12px rgba(28,28,26,.08), 0 16px 48px rgba(28,28,26,.14);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #121311; --surface: #1a1b19; --surface-2: #222420; --fg: #ecece8; --fg-2: #b0b0a8; --fg-3: #74746d; --line: #2c2e2a;
-  --accent: #6fc2bb; --accent-soft: #15302d; --accent-fg: #121311;
-  --good: #4fc68b; --good-soft: #15302a; --warn: #e1a63c; --warn-soft: #3a2d14; --crit: #ef7e6c; --crit-soft: #3d1f1a;
+  --bg: #191919; --surface: #202020; --surface-2: #2a2a2a; --surface-3: #333333; --fg: #e6e6e3; --fg-2: #b4b3af; --fg-3: #8a8985; --line: #3a3a3a;
+  --accent: #529cca; --accent-soft: #1f2d3a; --accent-fg: #ffffff;
+  --good: #529e72; --good-soft: #1e2d24; --warn: #c29343; --warn-soft: #33290f; --crit: #e36a63; --crit-soft: #3a1f1e;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 4px 12px rgba(0,0,0,.5), 0 16px 48px rgba(0,0,0,.5); color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #121311; --surface: #1a1b19; --surface-2: #222420; --fg: #ecece8; --fg-2: #b0b0a8; --fg-3: #74746d; --line: #2c2e2a;
-  --accent: #6fc2bb; --accent-soft: #15302d; --accent-fg: #121311;
-  --good: #4fc68b; --good-soft: #15302a; --warn: #e1a63c; --warn-soft: #3a2d14; --crit: #ef7e6c; --crit-soft: #3d1f1a;
+  --bg: #191919; --surface: #202020; --surface-2: #2a2a2a; --surface-3: #333333; --fg: #e6e6e3; --fg-2: #b4b3af; --fg-3: #8a8985; --line: #3a3a3a;
+  --accent: #529cca; --accent-soft: #1f2d3a; --accent-fg: #ffffff;
+  --good: #529e72; --good-soft: #1e2d24; --warn: #c29343; --warn-soft: #33290f; --crit: #e36a63; --crit-soft: #3a1f1e;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35); --shadow-lg: 0 4px 12px rgba(0,0,0,.5), 0 16px 48px rgba(0,0,0,.5); color-scheme: dark; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -43,7 +45,9 @@ p { margin: 0; }
 .btn { border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 9px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit; transition: background .15s; white-space: nowrap; }
 .btn:hover { background: var(--surface-2); }
 .btn.dark { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.dark:hover { background: var(--fg); opacity: .9; }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
 .btn.quiet { border-color: transparent; background: transparent; color: var(--fg-2); }
 .btn.sm { padding: 4px 10px; font-size: 12px; }
 .btn[disabled] { opacity: .5; cursor: default; }
@@ -55,20 +59,36 @@ p { margin: 0; }
 .tabs button[role="tab"] { border: 0; background: transparent; padding: 10px 2px; color: var(--fg-2); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; display: inline-flex; gap: 6px; align-items: center; }
 .tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--fg); }
 .tabs .cnt { font-family: var(--font-mono); font-size: 11px; background: var(--surface-2); padding: 0 6px; border-radius: 999px; color: var(--fg-2); }
-.tabs .sp { margin-left: auto; display: flex; gap: 6px; align-items: center; padding-bottom: 6px; }
-.icbtn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--fg-2); }
-.icbtn[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
+.tabs .sp { margin-left: auto; display: flex; gap: 4px; align-items: center; padding-bottom: 6px; }
+.chrow { display: flex; align-items: center; gap: 8px; }
+.chrow .chbar { flex: 1; min-width: 0; }
+.icbtn.chrow-tg { display: none; }
+.ov.sess-off .chrow-tg { display: grid; }
+.sess .sh .icbtn svg { width: 16px; height: 16px; }
+.icbtn { width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; display: grid; place-items: center; color: var(--fg-2); }
+.icbtn:hover { background: var(--surface-2); color: var(--fg); }
+.icbtn svg { width: 16px; height: 16px; }
+.icbtn[aria-pressed="false"] .fillp { display: none; }
 
 /* overview layout */
-.ov { display: grid; grid-template-columns: 232px minmax(0, 1fr) 320px; }
-.ov.rail-off { grid-template-columns: 232px minmax(0, 1fr); }
+.ov { --sessw: 232px; display: grid; grid-template-columns: var(--sessw) minmax(0, 1fr) 320px; }
+.ov.rail-off { grid-template-columns: var(--sessw) minmax(0, 1fr); }
+.ov.sess-off { grid-template-columns: minmax(0, 1fr) 320px; }
+.ov.sess-off.rail-off { grid-template-columns: minmax(0, 1fr); }
+.ov.sess-off .sess { display: none; }
+.ov.sess-off .main { padding-left: 0; border-left: 0; }
 .ov.setup, .ov.setup.rail-off { grid-template-columns: minmax(0, 1fr) !important; }
-.ov.setup .main { padding-left: 0; padding-right: 0; }
-.sess { border-right: 1px solid var(--line); padding: 14px 14px 0 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; align-self: start; display: grid; gap: 2px; align-content: start; }
-.sess .sh { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 8px; font-size: 13px; }
+.ov.setup .main { padding-left: 0; padding-right: 0; border: 0; }
+.sess { padding: 18px 14px 0 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; align-self: start; display: grid; gap: 2px; align-content: start; }
+.sess .sh { display: flex; align-items: center; gap: 8px; height: 44px; margin-bottom: 8px; padding: 0; font-size: 13px; }
+.sess .sh b { flex: 1; padding-left: 10px; }
+.sess .sh .sessTg, .icbtn.chrow-tg { width: 34px; height: 34px; border: 0; border-radius: 8px; flex: none; }
+
 .sess .sg { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 12px 10px 4px; }
 .si { display: grid; gap: 2px; text-align: left; border: 0; background: transparent; padding: 7px 10px; border-radius: 8px; width: 100%; }
 .si:hover { background: var(--surface-2); }
+.si.newsi, .si.home { margin-bottom: 2px; } .si.newsi .t, .si.home .t { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--fg); } .si.newsi svg, .si.home svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.si.home[aria-current="true"] .t { color: var(--accent); }
 .si[aria-current="true"] { background: var(--accent-soft); }
 .si[aria-current="true"] .t { color: var(--accent); }
 .si .t { font-size: 13px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
@@ -77,10 +97,10 @@ p { margin: 0; }
 .si .dot.auto { background: var(--accent); } .si .dot.trig { background: var(--warn); } .si .dot.me { background: var(--fg-2); } .si .dot.tr { background: var(--warn); } .si .dot.chart { background: var(--good); }
 .si.home { margin-bottom: 4px; }
 .si.new { animation: flash 1.4s ease; }
-.ov .main { min-width: 0; padding-top: 18px; padding-right: 24px; padding-left: 20px; display: grid; gap: 20px; align-content: start; position: relative; padding-bottom: 110px; }
-.ov.rail-off .main { padding-right: 0; }
+.ov .main { min-width: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); padding-top: 18px; padding-right: 24px; padding-left: 20px; display: grid; gap: 20px; align-content: start; position: relative; padding-bottom: 110px; }
+.ov.rail-off .main { padding-right: 0; border-right: 0; }
 .ov .main > *, #ws > *, .thread > *, .msg .body > * { min-width: 0; }
-.ov .rail { border-left: 1px solid var(--line); padding: 14px 0 0 18px; align-self: start; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
+.ov .rail { padding: 14px 0 0 18px; align-self: start; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
 .ov.rail-off .rail { display: none; }
 @media (max-width: 1100px) { .ov, .ov.rail-off { grid-template-columns: minmax(0, 1fr) 320px; } .sess { display: none; } }
 @media (max-width: 900px) { .ov, .ov.rail-off { grid-template-columns: 1fr; } .ov .main { padding-right: 0; } .ov .rail { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; position: static; max-height: none; } }
@@ -100,17 +120,17 @@ p { margin: 0; }
 .empty-ws { border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px 20px; text-align: center; color: var(--fg-3); font-size: 13px; }
 
 /* channel bar */
-.chbar { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.chbar { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; min-height: 44px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
 .chg { display: inline-flex; align-items: stretch; position: relative; }
-.chb { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; color: var(--fg-2); font-weight: 500; font-size: 13px; white-space: nowrap; }
-.chb .ico { font-size: 12px; opacity: .8; }
-.chb .lv { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); background: var(--surface-2); padding: 0 5px; border-radius: 4px; }
-.chb:hover { background: var(--surface-2); color: var(--fg); }
-.chb[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.chb[aria-pressed="true"] .lv { background: rgba(127,127,127,.3); color: var(--bg); }
-.chb.cross[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
-.chb.addb { color: var(--accent); border: 1px dashed var(--line); }
-.chb.addb:hover { background: var(--accent-soft); }
+.chb { border: 0; background: transparent; padding: 6px 12px; border-radius: 7px; display: inline-flex; align-items: center; gap: 7px; color: var(--fg-2); font-weight: 500; font-size: 13px; white-space: nowrap; }
+.chb .ico { width: 15px; height: 15px; display: inline-grid; place-items: center; opacity: .85; }
+.chb .ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.chb .lvdot { width: 6px; height: 6px; border-radius: 50%; flex: none; margin-left: -1px; } .chb .lvdot.lv-acts { background: var(--good); } .chb .lvdot.lv-sug { background: var(--warn); } .chb .lvdot.lv-reads { background: var(--fg-3); opacity: .6; }
+.chb:hover, .chg:hover .chb { background: var(--surface-2); color: var(--fg); }
+.chb[aria-pressed="true"], .chg:hover .chb[aria-pressed="true"] { background: var(--surface-3); color: var(--fg); font-weight: 600; }
+.chb[aria-pressed="true"] .ico { opacity: 1; }
+.chb.addb { color: var(--fg-3); }
+.chb.addb:hover { color: var(--fg); }
 .chg .dd.wide { min-width: 360px; }
 .chg .dd .ddh { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 6px 10px 4px; }
 .chg .dd button small { display: block; font-size: 11px; color: var(--fg-3); font-weight: 400; }
@@ -118,12 +138,12 @@ p { margin: 0; }
 .chg .dd button.rm { color: var(--fg-3); border-top: 1px solid var(--line); border-radius: 0; margin-top: 4px; padding-top: 8px; font-size: 12px; }
 .chg .dd button.rm:hover { color: var(--crit); }
 .chg.flash .chb { animation: flash 1.4s ease; }
-.chg .chv { border: 0; background: transparent; color: var(--fg-3); padding: 0 8px 0 2px; border-radius: 999px; font-size: 12px; }
-.chg .chv:hover { color: var(--fg); }
-.chg .dd { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 6px; display: grid; gap: 2px; min-width: 200px; }
-.chg .dd button { border: 0; background: transparent; text-align: left; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.chg .dd { position: absolute; top: calc(100% + 6px); left: 0; z-index: 9; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-lg); padding: 6px; display: none; gap: 2px; min-width: 200px; }
+.chg .dd::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
+.chg:hover:not(.closed) .dd { display: grid; }
+.chg .dd button { border: 0; background: transparent; text-align: left; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; align-items: center; color: var(--fg); }
 .chg .dd button:hover { background: var(--surface-2); }
-.chg .dd .lv { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); padding: 0 5px; border-radius: 4px; }
+.chg .dd .lv { font-family: var(--font-mono); font-size: 10px; color: var(--fg-2); background: var(--surface-2); padding: 0 5px; border-radius: 4px; }
 .chg .dd .lv.soon { color: var(--warn); background: var(--warn-soft); }
 /* workspace */
 .ws-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -212,18 +232,38 @@ p { margin: 0; }
 /* projects home */
 .home-h { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding-block: 10px 18px; }
 .home-h .r { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
-.pcard { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; align-content: start; transition: border-color .15s, box-shadow .15s; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; align-items: start; }
+.pcard { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; grid-template-rows: auto auto 1fr; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .pcard:hover { border-color: var(--fg-3); box-shadow: var(--shadow); }
 .pcard.new { border-style: dashed; background: transparent; }
-.pcard .ph { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; }
+.pcard .ph { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.pcard .ph > div { min-width: 0; }
 .pcard .ph .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; }
-.pcard .ph b { font-weight: 600; display: block; } .pcard .ph small { color: var(--fg-3); font-size: 12px; }
+.pcard .ph b { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pcard .ph small { color: var(--fg-3); font-size: 12px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pcard .pk { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .pcard .pk span { font-family: var(--font-mono); font-size: 14px; } .pcard .pk em { display: block; font-style: normal; font-family: var(--font-ui); font-size: 11px; color: var(--fg-3); }
-.pcard .pf { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--fg-3); }
-.pcard .pl { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--fg-2); border-top: 1px solid var(--line); padding-top: 10px; }
-.pcard .pl .av { width: 20px; height: 20px; font-size: 9px; }
+.pcard .pf { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--fg-2); border-top: 1px solid var(--line); padding-top: 10px; min-width: 0; align-self: end; }
+.pcard.new { grid-template-rows: auto auto; }
+.pcard .members { display: flex; flex: none; }
+.pcard .members .av { width: 22px; height: 22px; font-size: 9px; border: 2px solid var(--surface); margin-right: -6px; }
+.pcard .st { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; margin-left: 8px; justify-content: flex-end; }
+.pcard .risk { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; min-width: 0; }
+.pcard .risk span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.pcard .risk i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.pcard .risk.crit { color: var(--crit); } .pcard .risk.crit i { background: var(--crit); }
+.pcard .risk.warn { color: var(--warn); } .pcard .risk.warn i { background: var(--warn); }
+.pcard .risk.ok { color: var(--good); } .pcard .risk.ok i { background: var(--good); }
+.pcard .rchev { flex: none; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); display: grid; place-items: center; color: var(--fg-2); padding: 0; }
+.pcard .rchev svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.pcard .rchev:hover { background: var(--surface-2); color: var(--fg); }
+.pcard .rchev[aria-expanded="true"] svg { transform: rotate(90deg); }
+.pcard { position: relative; }
+.pcard .rp { position: absolute; left: 10px; right: 10px; top: calc(100% - 6px); z-index: 12; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 8px; display: grid; gap: 6px; cursor: default; }
+.pcard .rp .rph { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 4px 6px 0; }
+.pcard .ri { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.pcard .ri i { width: 8px; height: 8px; border-radius: 50%; } .pcard .ri.crit i { background: var(--crit); } .pcard .ri.warn i { background: var(--warn); }
+.pcard .ri b { display: block; font-weight: 600; color: var(--fg); } .pcard .ri small { display: block; color: var(--fg-3); font-size: 11px; margin-top: 2px; }
+.pcard .ri .btn { white-space: nowrap; }
 .ssgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .ss { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 3px; transition: border-color .15s; }
 .ss:hover { border-color: var(--fg-3); }
@@ -283,6 +323,8 @@ td .ainote::before { content: "✦"; color: var(--accent); font-size: 10px; }
 .chip .lv { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); padding: 0 5px; border-radius: 4px; }
 .chip .lv.soon { color: var(--warn); background: var(--warn-soft); }
 .act-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.xsum { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 13px; line-height: 1.55; color: var(--fg); }
+.xsum p { max-width: 90ch; }
 .act-list li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; }
 .av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; background: var(--surface-2); color: var(--fg-2); }
 .av.me { background: var(--accent); color: var(--accent-fg); } .av.ai { background: var(--accent-soft); color: var(--accent); border-radius: 6px; } .av.tr { background: var(--warn-soft); color: var(--warn); }
@@ -421,7 +463,59 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
 .mcp .tools { display: flex; flex-wrap: wrap; gap: 6px; }
 .mcp .tools span { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--fg-2); }
 .mcp .tools span.w { border-color: var(--warn); color: var(--warn); }
+/* side chat */
+#project { transition: padding-right .2s; }
+#project.with-side { padding-right: calc(var(--sidew, 420px) + 16px); }
+.sidepanel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--sidew, 420px); background: var(--bg); border-left: 1px solid var(--line); z-index: 15; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; min-width: 0; }
+.sp-tabs { display: flex; gap: 4px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); overflow-x: auto; min-height: 50px; }
+.sp-tab { border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 5px 10px; font-size: 13px; color: var(--fg-2); white-space: nowrap; max-width: 170px; overflow: hidden; text-overflow: ellipsis; display: inline-flex; gap: 6px; align-items: center; }
+.sp-tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 500; }
+.sp-tab .x { color: var(--fg-3); font-size: 12px; }
+.sp-tabs .r { margin-left: auto; display: flex; gap: 2px; flex: none; }
+.sp-ctx { padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--bg); font-size: 12px; color: var(--fg-2); display: grid; gap: 4px; }
+.sp-ctx .src { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
+.sp-ctx q { quotes: none; display: block; border-left: 3px solid var(--fg-3); padding-left: 10px; color: var(--fg); font-size: 13px; line-height: 1.4; max-height: 88px; overflow: hidden; }
+.sp-msgs { overflow-y: auto; padding: 16px; display: grid; gap: 12px; align-content: start; font-size: 13px; line-height: 1.5; }
+.sp-msgs .empty-s { color: var(--fg-3); text-align: center; padding: 40px 10px; }
+.sp-msgs .chips { padding-top: 2px; }
+.sp-in { padding: 12px 16px 12px; border-top: 1px solid var(--line); display: grid; gap: 8px; background: var(--bg); }
+.sp-in .hint { font-size: 11px; color: var(--fg-3); padding-left: 4px; }
+.sp-box { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 6px 6px 6px 14px; box-shadow: var(--shadow); }
+.sp-box:focus-within { border-color: var(--fg-3); }
+.sp-box input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 14px; color: var(--fg); outline: none; padding: 6px 0; }
+.sp-box .send { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-size: 15px; flex: none; }
+.selpop { position: absolute; z-index: 40; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-lg); display: flex; overflow: hidden; }
+.selpop button { border: 0; background: transparent; padding: 7px 12px; font-size: 13px; font-weight: 500; }
+.selpop button + button { border-left: 1px solid var(--line); }
+.selpop button:hover { background: var(--surface-2); }
+#project.with-side { max-width: none; }
+#project.with-side .ov.setup { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1560px) { #project.with-side .rail { display: none; } #project.with-side .ov { grid-template-columns: var(--sessw) minmax(0, 1fr); } #project.with-side .ov.sess-off { grid-template-columns: minmax(0, 1fr); } #project.with-side .ov .main { padding-right: 0; border-right: 0; } }
+@media (max-width: 900px) { #project.with-side { padding-right: 16px; } .sidepanel { width: 100vw; } }
+.si .dot.side { background: #7a5af5; }
 .flash { animation: flash 1.4s ease; } @keyframes flash { 0% { background: var(--accent-soft); } 100% { background: transparent; } }
+.pal { position: fixed; inset: 0; z-index: 50; background: rgba(15,15,15,.35); display: flex; align-items: flex-start; justify-content: center; padding: 12vh 16px 0; }
+.pal-box { width: min(640px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden; }
+.pal-in { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--fg-3); }
+.pal-in svg { width: 18px; height: 18px; flex: none; }
+.pal-in input { flex: 1; border: 0; background: transparent; font: inherit; font-size: 15px; color: var(--fg); outline: none; min-width: 0; }
+.pal kbd { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--fg-3); background: var(--surface-2); }
+.pal-list { max-height: 50vh; overflow-y: auto; padding: 6px; }
+.pal-list .pg { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; padding: 8px 10px 4px; }
+.pal-list .pi { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; text-align: left; padding: 7px 10px; border-radius: 6px; font-size: 13px; color: var(--fg); }
+.pal-list .pi .k { font-size: 11px; color: var(--fg-3); margin-left: auto; white-space: nowrap; }
+.pal-list .pi[aria-selected="true"], .pal-list .pi:hover { background: var(--surface-2); }
+.pal-list .none { padding: 24px 10px; color: var(--fg-3); text-align: center; font-size: 13px; }
+.pal-foot { display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--fg-3); flex-wrap: wrap; }
+.acct { position: relative; display: inline-flex; }
+.acctb { border: 0; cursor: pointer; }
+.acctm { position: absolute; right: 0; top: calc(100% + 8px); width: 260px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 20; display: grid; gap: 2px; font-size: 13px; text-align: left; }
+.acctm .who { display: flex; gap: 10px; align-items: center; padding: 8px 8px 6px; } .acctm .who .av { width: 32px; height: 32px; font-size: 12px; } .acctm .who b { display: block; font-weight: 600; } .acctm .who small { display: block; color: var(--fg-3); font-size: 12px; }
+.acctm .sep { height: 1px; background: var(--line); margin: 4px 0; }
+.acctm .mi { border: 0; background: transparent; text-align: left; padding: 7px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--fg); width: 100%; }
+.acctm button.mi:hover { background: var(--surface-2); }
+.acctm .mi .mr { font-size: 11px; color: var(--fg-3); }
+.acctm .seg.sm button { padding: 2px 8px; font-size: 12px; }
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 13px; box-shadow: var(--shadow); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 30; max-width: calc(100vw - 32px); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
@@ -429,56 +523,70 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
 <div class="shell" id="home">
   <div class="top">
     <span style="font-weight:600;color:var(--fg)">Projects</span>
-    <div class="right"><button class="btn sm quiet">Usage</button><button class="btn sm primary" id="newProject">+ New project</button><span class="av me" style="width:28px;height:28px;font-size:11px">Z</span></div>
+    <div class="right"><button class="btn sm quiet">Usage</button><button class="btn sm primary" id="newProject">+ New project</button><div class="acct"><button class="av me acctb" style="width:28px;height:28px;font-size:11px" aria-haspopup="menu" aria-expanded="false" title="Account">Z</button>
+      <div class="acctm" role="menu" hidden>
+        <div class="who"><span class="av me">Z</span><div><b>Zoe Zheng</b><small>zoe.zheng@pacvue.com</small></div></div>
+        <div class="sep"></div>
+        <button class="mi" data-acct="account">My account</button>
+        <button class="mi" data-acct="users">Role &amp; user management<span class="mr">Admin</span></button>
+        <div class="sep"></div>
+        <div class="mi row"><span>Dark mode</span><button class="toggle" id="themeToggle" aria-pressed="false" aria-label="Dark mode"></button></div>
+        <div class="mi row"><span>Language</span><span class="seg sm" id="langSeg"><button aria-pressed="true" data-lang="en">EN</button><button aria-pressed="false" data-lang="zh">中文</button></span></div>
+        <div class="sep"></div>
+        <button class="mi" data-acct="signout">Sign out</button>
+      </div></div></div>
   </div>
   <div class="home-h">
     <div><h1 style="font-size:22px">Your projects</h1><p style="color:var(--fg-2);margin-top:4px">A project is one agent with its own context, memory, skills and scheduled tasks — usually one per brand line or client account.</p></div>
-    <div class="r"><span class="seg" id="homeSeg"><button aria-pressed="true">All</button><button aria-pressed="false">Mine</button><button aria-pressed="false">Shared with me</button><button aria-pressed="false">Archived</button></span><button class="btn sm">Sort: Needs attention ⌄</button></div>
   </div>
   <div class="pgrid" id="pgrid">
-    <button class="pcard" data-open-project="kitchen">
-      <div class="ph"><span class="ic">K</span><div><b>Kitchen Brand Line</b><small>Retail · Programmatic · Social · Paid search · Agentic</small></div><span class="pill warn" id="homeKitchenPill">6 waiting</span></div>
+    <div class="pcard" role="button" tabindex="0" data-open-project="kitchen">
+      <div class="ph"><span class="ic">K</span><div><b>Kitchen Brand Line</b><small>Retail · Programmatic · 5 scheduled tasks</small></div></div>
       <div class="pk"><span><em>Spend 7d</em>$183.2K</span><span><em>ROAS</em>4.10</span><span><em>ACOS</em>24.4%</span></div>
-      <div class="pf"><span class="members"><span class="av me">Z</span><span class="av tr">T</span></span><span>5 tasks · last run today 11:00</span></div>
-      <div class="pl"><span class="av ai">A</span>Moved $46 of unspent budget to afternoon peaks · 11:00</div>
-    </button>
-    <button class="pcard" data-open-project="other">
-      <div class="ph"><span class="ic" style="background:var(--warn-soft);color:var(--warn)">P</span><div><b>Personal Care Brand Line</b><small>Amazon US · Amazon CA</small></div><span class="pill good">All clear</span></div>
+      <div class="pf"><span class="members" title="Members"><span class="av me">Z</span><span class="av tr">T</span></span><span class="st"><span class="risk crit"><i></i><span>1 risk · Walmart ROAS −38%</span></span><button class="rchev" aria-expanded="false" aria-label="Show risks"><svg viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button></span></div>
+      <div class="rp" hidden><p class="rph">Important risks</p>
+        <div class="ri crit"><i></i><div><b>Walmart "Air Fryer – Brand": ROAS fell 4.6 → 2.9</b><small>Two broad terms at $1.86 CPC with flat conversion · change list ready · yesterday 20:14</small></div><button class="btn sm" data-followup="kitchen" data-q="Walmart &quot;Air Fryer – Brand&quot;: ROAS fell from 4.6 to 2.9 in two weeks. Two broad terms went to $1.86 CPC with flat conversion.">Follow up</button></div>
+        <div class="ri warn"><i></i><div><b>Air Fryer – Exact runs out of budget before noon</b><small>Raise above your $30 limit needs approval · 5 days in a row</small></div><button class="btn sm" data-followup="kitchen" data-q="Air Fryer – Exact has exhausted its $70 budget before noon for five days; the raise exceeds my $30 auto limit.">Follow up</button></div>
+      </div>
+    </div>
+    <div class="pcard" role="button" tabindex="0" data-open-project="other">
+      <div class="ph"><span class="ic" style="background:var(--warn-soft);color:var(--warn)">P</span><div><b>Personal Care Brand Line</b><small>Amazon US · Amazon CA · 3 scheduled tasks</small></div></div>
       <div class="pk"><span><em>Spend 7d</em>$96.4K</span><span><em>ROAS</em>3.62</span><span><em>ACOS</em>27.6%</span></div>
-      <div class="pf"><span class="members"><span class="av me">Z</span><span class="av">M</span><span class="av">J</span></span><span>3 tasks · last run today 06:00</span></div>
-      <div class="pl"><span class="av ai">A</span>Monday briefing: nothing needs a decision · 06:00</div>
-    </button>
-    <button class="pcard" data-open-project="other">
-      <div class="ph"><span class="ic" style="background:var(--crit-soft);color:var(--crit)">H</span><div><b>Holiday Gifting 2026</b><small>Amazon US · Walmart · Instacart · campaign launch</small></div><span class="pill crit">Setup 1/3</span></div>
+      <div class="pf"><span class="members" title="Members"><span class="av me">Z</span><span class="av">M</span><span class="av">J</span></span><span class="st"><span class="risk ok"><i></i><span>No risks</span></span></span></div>
+    </div>
+    <div class="pcard" role="button" tabindex="0" data-open-project="holiday">
+      <div class="ph"><span class="ic" style="background:var(--crit-soft);color:var(--crit)">H</span><div><b>Holiday Gifting 2026</b><small>Amazon US · Walmart · Instacart · try onboarding</small></div><span class="pill crit">Setup 0/3</span></div>
       <div class="pk"><span><em>Spend 7d</em>—</span><span><em>ROAS</em>—</span><span><em>Launch</em>Nov 1</span></div>
-      <div class="pf"><span class="members"><span class="av tr">T</span><span class="av me">Z</span></span><span>0 tasks · created by Tracy</span></div>
-      <div class="pl"><span class="av tr">T</span>Tracy invited you as Editor · yesterday</div>
-    </button>
-    <button class="pcard" data-open-project="other">
-      <div class="ph"><span class="ic" style="background:var(--surface-2);color:var(--fg-2)">B</span><div><b>Brand X · Walmart (client)</b><small>Walmart · shared from Agency workspace</small></div><span class="pill neutral">Read only</span></div>
+      <div class="pf"><span class="members" title="Members"><span class="av tr">T</span><span class="av me">Z</span></span><span class="st"><span class="risk warn"><i></i><span>Launch in 3 days · setup 0/3</span></span><button class="rchev" aria-expanded="false" aria-label="Show risks"><svg viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button></span></div>
+      <div class="rp" hidden><p class="rph">Important risks</p>
+        <div class="ri warn"><i></i><div><b>Launch is Nov 1 and no channel is connected</b><small>The agent cannot prepare the pre-launch checklist until setup completes</small></div><button class="btn sm" data-followup="holiday" data-q="Holiday Gifting 2026 launches Nov 1 and setup is 0/3; what do I need to do first?">Follow up</button></div>
+      </div>
+    </div>
+    <div class="pcard" role="button" tabindex="0" data-open-project="other">
+      <div class="ph"><span class="ic" style="background:var(--surface-2);color:var(--fg-2)">B</span><div><b>Brand X · Walmart (client)</b><small>Walmart · shared from Agency · read only</small></div><span class="pill neutral">Read only</span></div>
       <div class="pk"><span><em>Spend 7d</em>$41.0K</span><span><em>ROAS</em>2.95</span><span><em>ACOS</em>33.9%</span></div>
-      <div class="pf"><span class="members"><span class="av">R</span><span class="av">S</span><span class="av me">Z</span></span><span>2 tasks · last run Oct 24</span></div>
-      <div class="pl"><span class="av ai">A</span>Weekly report saved to Files · Oct 24</div>
-    </button>
-    <button class="pcard new" id="newProject2">
-      <div class="ph"><span class="ic" style="background:transparent;border:1px dashed var(--line);color:var(--fg-3)">+</span><div><b>New project</b><small>Start from a template</small></div></div>
-      <div class="tpl"><span>Brand line</span><span>Client account</span><span>Campaign launch</span><span>Blank</span></div>
-    </button>
+      <div class="pf"><span class="members" title="Members"><span class="av">R</span><span class="av">S</span><span class="av me">Z</span></span><span class="st"><span class="risk warn"><i></i><span>1 risk · CPC over limit</span></span><button class="rchev" aria-expanded="false" aria-label="Show risks"><svg viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button></span></div>
+      <div class="rp" hidden><p class="rph">Important risks</p>
+        <div class="ri warn"><i></i><div><b>2 broad terms over the CPC limit on Walmart</b><small>Read-only project: change list prepared, Agency applies it · Oct 22</small></div><button class="btn sm" data-followup="other" data-q="Brand X on Walmart: two broad terms are over the CPC limit since Oct 22.">Follow up</button></div>
+      </div>
+    </div>
   </div>
   <div style="margin-top:22px">
-    <div class="ws-h" style="margin-bottom:10px"><h2 style="font-size:15px">Shared services</h2><span style="font-size:12px;color:var(--fg-3)">Account-wide libraries and guardrails · projects reference them, agents use them</span><div class="r"><button class="btn sm quiet">Open in Prism ↗</button></div></div>
+    <div class="ws-h" style="margin-bottom:10px"><h2 style="font-size:15px">Shared services</h2><span style="font-size:12px;color:var(--fg-3)">Account-wide libraries and guardrails · projects reference them, agents use them</span></div>
     <div class="ssgrid">
-      <button class="ss"><span class="k">Assets</span><b>Creative Center</b><small>1,284 assets · 38 tagged Kitchen Q4</small><span class="u">Used in 3 projects · agent matched 112 times</span></button>
-      <button class="ss"><span class="k">Assets</span><b>Audience Center</b><small>46 segments · 9 cross-platform</small><span class="u">Used in 4 projects · agent proposed 2 new</span></button>
-      <button class="ss"><span class="k">Assets</span><b>Deal Center</b><small>12 PMP deals · Roku, ADSP, Walmart DSP</small><span class="u">Used in 2 projects</span></button>
-      <button class="ss g"><span class="k">Guardrail</span><b>Domain Preference</b><small>Allow 212 · block 38 domains</small><span class="u">Enforced on every programmatic action</span></button>
-      <button class="ss g"><span class="k">Guardrail</span><b>GEO Control</b><small>US · 4 state exclusions for CTV</small><span class="u">Enforced on every action</span></button>
-      <button class="ss g"><span class="k">Guardrail</span><b>Brand Safety</b><small>GARM floor: High · 4 categories excluded</small><span class="u">Enforced · 0 overrides allowed</span></button>
+      <button class="ss"><span class="k">Assets</span><b>Creative Center</b><small>1,284 assets · 38 tagged Kitchen Q4</small></button>
+      <button class="ss"><span class="k">Assets</span><b>Audience Center</b><small>46 segments · 9 cross-platform</small></button>
+      <button class="ss"><span class="k">Assets</span><b>Deal Center</b><small>12 PMP deals · Roku, ADSP, Walmart DSP</small></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>Domain Preference</b><small>Allow 212 · block 38 domains</small></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>GEO Control</b><small>US · 4 state exclusions for CTV</small></button>
+      <button class="ss g"><span class="k">Guardrail</span><b>Brand Safety</b><small>GARM floor: High · 4 categories excluded</small></button>
     </div>
   </div>
   <div class="card" style="padding:14px 16px;display:grid;gap:8px;margin-top:8px">
-    <div style="display:flex;align-items:center;gap:10px"><h2 style="font-size:14px">Across all projects</h2><span style="font-size:12px;color:var(--fg-3)">today</span></div>
-    <ul class="act-list" style="grid-template-columns:1fr">
+    <div style="display:flex;align-items:center;gap:10px"><h2 style="font-size:14px">Across all projects</h2><span style="font-size:12px;color:var(--fg-3)">Agent summary · updated 06:00</span></div>
+    <div class="xsum"><span class="av ai">A</span><p>Overnight the four agents handled <b>23 actions</b> under your rules, all undoable. Two things need you today: <b>Kitchen</b>'s Walmart "Air Fryer – Brand" is losing money on two broad terms (change list ready), and Air Fryer – Exact needs a budget raise above your $30 limit. <b>Holiday Gifting 2026</b> launches in 3 days with setup still at 0/3. <b>Personal Care</b> and <b>Brand X</b> are steady; nothing to decide there.</p></div>
+    <div class="chips" style="padding:0 0 2px 32px"><button class="chip" data-xq="Show me the two Kitchen decisions">Review the 2 Kitchen decisions</button><button class="chip" data-xq="Finish Holiday Gifting setup">Finish Holiday setup</button><button class="chip" data-xq="What changed since yesterday across all projects?">What changed since yesterday?</button></div>
+    <ul class="act-list" style="grid-template-columns:1fr;border-top:1px solid var(--line);padding-top:10px;margin-top:2px">
       <li><span class="av ai">A</span><span>4 suggestions waiting in <b>Kitchen Brand Line</b> — 1 above your approval limit<small>06:00</small></span></li>
       <li><span class="av ai">A</span><span>Walmart write access is rolling out; <b>Kitchen</b> and <b>Brand X</b> will be able to apply change lists directly<small>Platform update</small></span></li>
       <li><span class="av tr">T</span><span>Tracy created <b>Holiday Gifting 2026</b> and invited you<small>Yesterday</small></span></li>
@@ -489,23 +597,35 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
 <div class="shell" id="project" hidden>
   <div class="top">
     <button class="btn sm quiet" id="toHome" style="padding-left:0">Projects</button><span>›</span><button class="btn sm quiet" id="projSwitch">Kitchen Brand Line ⌄</button>
-    <div class="right"><span class="btn sm quiet" id="resetSetup">Reset demo</span><button class="btn sm quiet">Usage</button><button class="btn sm dark">Share</button></div>
+    <div class="right"><span class="btn sm quiet" id="resetSetup">Replay setup</span><button class="btn sm quiet">Usage</button><button class="btn sm dark">Share</button><div class="acct"><button class="av me acctb" style="width:28px;height:28px;font-size:11px" aria-haspopup="menu" aria-expanded="false" title="Account">Z</button>
+      <div class="acctm" role="menu" hidden>
+        <div class="who"><span class="av me">Z</span><div><b>Zoe Zheng</b><small>zoe.zheng@pacvue.com</small></div></div>
+        <div class="sep"></div>
+        <button class="mi" data-acct="account">My account</button>
+        <button class="mi" data-acct="users">Role &amp; user management<span class="mr">Admin</span></button>
+        <div class="sep"></div>
+        <div class="mi row"><span>Dark mode</span><button class="toggle" id="themeToggle2" aria-pressed="false" aria-label="Dark mode"></button></div>
+        <div class="mi row"><span>Language</span><span class="seg sm" id="langSeg2"><button aria-pressed="true" data-lang="en">EN</button><button aria-pressed="false" data-lang="zh">中文</button></span></div>
+        <div class="sep"></div>
+        <button class="mi" data-acct="signout">Sign out</button>
+      </div></div></div>
   </div>
-  <div class="proj"><div class="ic">K</div><div><h1>Kitchen Brand Line</h1><small>5 channels · 12 platforms · 2 members · Concept mockup, sample data</small></div></div>
+  <div class="proj"><div class="ic" id="projIc">K</div><div><h1 id="projName">Kitchen Brand Line</h1><small id="projSub">5 channels · 12 platforms · 2 members · Concept mockup, sample data</small></div></div>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
     <button role="tab" aria-selected="false" data-tab="tasks">Scheduled tasks <span class="cnt">5</span></button>
     <button role="tab" aria-selected="false" data-tab="files">Files <span class="cnt">7</span></button>
     <button role="tab" aria-selected="false" data-tab="settings">Settings</button>
-    <div class="sp"><button class="icbtn" title="Search">⌕</button><button class="icbtn" id="railToggle" aria-pressed="true" title="Toggle side panel">▥</button></div>
+    <div class="sp"><button class="icbtn" id="searchBtn" title="Search (⌘K)" aria-label="Search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.8" cy="6.8" r="4.3"/><path d="M10 10l4 4"/></svg></button><button class="icbtn" id="railToggle" aria-pressed="true" title="Hide insights panel" aria-label="Toggle insights panel"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M10 2.5v11"/><rect class="fillp" x="10" y="2.5" width="4.5" height="11" fill="currentColor" stroke="none" opacity=".3"/></svg></button></div>
   </div>
 
   <!-- ================= OVERVIEW ================= -->
   <section data-panel="overview">
     <div class="ov" id="ov">
       <aside class="sess" id="sess">
-        <div class="sh"><b>Sessions</b><button class="btn sm quiet" id="newSess" title="New session">+ New</button></div>
-        <button class="si home" id="sessHome" aria-current="true"><span class="t">Overview</span><span class="m">KPIs · charts · campaigns</span></button>
+        <div class="sh"><b>Sessions</b><button class="icbtn sessTg" aria-pressed="true" title="Hide sessions" aria-label="Hide sessions list"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11"/><rect class="fillp" x="1.5" y="2.5" width="4.5" height="11" fill="currentColor" stroke="none" opacity=".3"/></svg></button></div>
+        <button class="si newsi" id="newSess" title="New session"><span class="t"><svg viewBox="0 0 16 16"><path d="M8 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V8"/><path d="M11.5 2.2l2.3 2.3-6.3 6.3H5.2V8.5z"/></svg>New session</span></button>
+        <button class="si home" id="sessHome" aria-current="true"><span class="t"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Overview</span></button>
         <div class="sg">Today</div>
         <div id="sessToday"></div>
         <button class="si" data-sess="brief"><span class="t">Monday briefing</span><span class="m"><i class="dot auto"></i>Scheduled · 06:00</span></button>
@@ -542,20 +662,21 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
         </div>
 
         <div id="ws" hidden style="display:grid;gap:20px">
+          <div class="chrow"><button class="icbtn sessTg chrow-tg" aria-pressed="false" title="Show sessions" aria-label="Show sessions list"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11"/><rect class="fillp" x="1.5" y="2.5" width="4.5" height="11" fill="currentColor" stroke="none" opacity=".3"/></svg></button>
           <div class="chbar" id="chbar">
-            <button class="chb cross" data-ch="cross" aria-pressed="true"><span class="ico">⊕</span>Cross-channel</button>
-            <div class="chg" data-ch="retail"><button class="chb" data-ch="retail" aria-pressed="false"><span class="ico">🛒</span>Retail<span class="lv">Acts</span></button><button class="chv" data-dd="retail" aria-label="Platforms">⌄</button>
-              <div class="dd" hidden><button data-plat="all">All Retail</button><button data-plat="amazon">Amazon <span class="lv">Acts</span></button><button data-plat="walmart">Walmart <span class="lv soon">Suggests · acting soon</span></button><button data-plat="instacart">Instacart <span class="lv">Suggests</span></button><button data-plat="target">Target <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
-            <div class="chg" data-ch="prog"><button class="chb" data-ch="prog" aria-pressed="false"><span class="ico">▭</span>Programmatic<span class="lv">Acts</span></button><button class="chv" data-dd="prog" aria-label="Platforms">⌄</button>
-              <div class="dd" hidden><button data-plat="all">All Programmatic</button><button data-plat="adsp">Amazon DSP <span class="lv">Acts</span></button><button data-plat="walmartdsp">Walmart DSP <span class="lv">Suggests</span></button><button data-plat="roku">Roku <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
-            <div class="chg" data-ch="social" hidden><button class="chb" data-ch="social" aria-pressed="false"><span class="ico">☺</span>Social &amp; Discovery<span class="lv">Suggests</span></button><button class="chv" data-dd="social" aria-label="Platforms">⌄</button>
-              <div class="dd" hidden><button data-plat="all">All Social</button><button data-plat="tiktok">TikTok <span class="lv">Suggests</span></button><button data-plat="meta">Meta <span class="lv">Suggests</span></button><button data-plat="pinterest">Pinterest <span class="lv">Reads</span></button><button data-plat="reddit">Reddit <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
-            <div class="chg" data-ch="search" hidden><button class="chb" data-ch="search" aria-pressed="false"><span class="ico">⌕</span>Paid search<span class="lv">Suggests</span></button><button class="chv" data-dd="search" aria-label="Platforms">⌄</button>
-              <div class="dd" hidden><button data-plat="all">All Paid search</button><button data-plat="google">Google Ads <span class="lv">Suggests</span></button><button data-plat="bing">Bing Ads <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
-            <div class="chg" data-ch="agentic" hidden><button class="chb" data-ch="agentic" aria-pressed="false"><span class="ico">✦</span>Agentic<span class="lv">Reads</span></button><button class="chv" data-dd="agentic" aria-label="Platforms">⌄</button>
-              <div class="dd" hidden><button data-plat="all">All Agentic</button><button data-plat="chatgpt">ChatGPT <span class="lv">Reads</span></button><button data-plat="perplexity">Perplexity <span class="lv soon">soon</span></button><button data-remove class="rm">Remove from bar</button></div></div>
-            <div class="chg add" id="addChg"><button class="chb addb" id="addCh">+ Add channel</button>
-              <div class="dd wide" id="addDd" hidden>
+            <button class="chb cross" data-ch="cross" aria-pressed="true"><span class="ico"><svg viewBox="0 0 16 16"><path d="M8 2.5l5.5 3L8 8.5l-5.5-3z"/><path d="M2.5 8.5L8 11.5l5.5-3"/><path d="M2.5 11.5L8 14.5l5.5-3"/></svg></span>Cross-channel</button>
+            <div class="chg" data-ch="retail"><button class="chb" data-ch="retail" aria-pressed="false" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><path d="M1.5 2.5h2l1.7 7.5h6.6l1.7-5H4.2"/><circle cx="6.3" cy="13" r="1"/><circle cx="11.3" cy="13" r="1"/></svg></span>Retail<i class="lvdot lv-acts" title="Agent can act here within your approval rules"></i></button>
+              <div class="dd" role="menu"><button data-plat="all">All Retail</button><button data-plat="amazon">Amazon <span class="lv">Acts</span></button><button data-plat="walmart">Walmart <span class="lv soon">Suggests · acting soon</span></button><button data-plat="instacart">Instacart <span class="lv">Suggests</span></button><button data-plat="target">Target <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="prog"><button class="chb" data-ch="prog" aria-pressed="false" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.5"/><path d="M5.5 14h5M8 11v3"/></svg></span>Programmatic<i class="lvdot lv-acts" title="Agent can act here within your approval rules"></i></button>
+              <div class="dd" role="menu"><button data-plat="all">All Programmatic</button><button data-plat="adsp">Amazon DSP <span class="lv">Acts</span></button><button data-plat="walmartdsp">Walmart DSP <span class="lv">Suggests</span></button><button data-plat="roku">Roku <span class="lv">Suggests</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="social" hidden><button class="chb" data-ch="social" aria-pressed="false" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.3" r="2.4"/><path d="M1.5 13.5c0-2.5 2-4.3 4.5-4.3s4.5 1.8 4.5 4.3"/><circle cx="11.3" cy="6" r="1.9"/><path d="M14.5 13.5c0-2-1.2-3.4-2.9-3.8"/></svg></span>Social &amp; Discovery<i class="lvdot lv-sug" title="Agent suggests here · you apply in the platform"></i></button>
+              <div class="dd" role="menu"><button data-plat="all">All Social</button><button data-plat="tiktok">TikTok <span class="lv">Suggests</span></button><button data-plat="meta">Meta <span class="lv">Suggests</span></button><button data-plat="pinterest">Pinterest <span class="lv">Reads</span></button><button data-plat="reddit">Reddit <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="search" hidden><button class="chb" data-ch="search" aria-pressed="false" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><circle cx="6.8" cy="6.8" r="4.3"/><path d="M10 10l4 4"/></svg></span>Paid search<i class="lvdot lv-sug" title="Agent suggests here · you apply in the platform"></i></button>
+              <div class="dd" role="menu"><button data-plat="all">All Paid search</button><button data-plat="google">Google Ads <span class="lv">Suggests</span></button><button data-plat="bing">Bing Ads <span class="lv">Reads</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg" data-ch="agentic" hidden><button class="chb" data-ch="agentic" aria-pressed="false" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><path d="M8 1.5l1.5 4.2 4.2 1.5-4.2 1.5L8 12.9 6.5 8.7 2.3 7.2l4.2-1.5z"/><path d="M13 12l.5 1.3 1.3.5-1.3.5L13 15.6l-.5-1.3-1.3-.5 1.3-.5z"/></svg></span>Agentic<i class="lvdot lv-reads" title="Agent reads data here · no actions yet"></i></button>
+              <div class="dd" role="menu"><button data-plat="all">All Agentic</button><button data-plat="chatgpt">ChatGPT <span class="lv">Reads</span></button><button data-plat="perplexity">Perplexity <span class="lv soon">soon</span></button><button data-remove class="rm">Remove from bar</button></div></div>
+            <div class="chg add" id="addChg"><button class="chb addb" id="addCh" aria-haspopup="menu"><span class="ico"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></span>Add channel</button>
+              <div class="dd wide" id="addDd" role="menu">
                 <p class="ddh">Channels not on your bar</p>
                 <button data-add="social"><span><b>Social &amp; Discovery</b><small>TikTok, Meta, Pinterest, Reddit · agent suggests</small></span><span class="lv">Add</span></button>
                 <button data-add="search"><span><b>Paid search</b><small>Google Ads, Bing Ads · agent suggests</small></span><span class="lv">Add</span></button>
@@ -565,8 +686,9 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
                 <p class="ddh" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px">Cross-channel always rolls up the channels on your bar.</p>
               </div></div>
           </div>
+          </div>
           <div class="ws-h"><h2 id="perfTitle">Performance · Cross-channel</h2><span style="font-size:12px;color:var(--fg-3)">Last 7 days vs. previous 7</span>
-            <div class="r"><span class="tag" id="tierTag">Cross-channel rolls up Retail + Programmatic · add channels to widen it</span><button class="btn sm">Oct 19 – 25 ⌄</button></div>
+            <div class="r"><button class="btn sm">Oct 19 – 25 ⌄</button></div>
           </div>
           <div class="kpis" id="kpis"></div>
 
@@ -626,7 +748,7 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
             <div class="bar">
               <span class="seg" id="mode"><button aria-pressed="false" data-mode="ask">Ask</button><button aria-pressed="true" data-mode="act">Act</button></span>
               <span class="hint">Act mode still follows your approval rules</span>
-              <span class="hint" style="margin-left:auto"><kbd>⌘</kbd> <kbd>K</kbd></span>
+              <span class="hint" style="margin-left:auto"><kbd>⌘</kbd> <kbd>J</kbd></span>
               <button class="send" id="send" aria-label="Send">↑</button>
             </div>
           </div>
@@ -872,6 +994,18 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
     </div>
   </div>
 </div>
+<div class="selpop" id="selpop" hidden><button id="selSide">Start a side chat</button><button id="selReply">Reply</button></div>
+<aside class="sidepanel" id="sidepanel" hidden aria-label="Side chats">
+  <div class="sp-tabs"><div id="spTabs" style="display:flex;gap:4px"></div><div class="r"><button class="icbtn" id="spNew" title="New side chat">+</button><button class="icbtn" id="spExpand" title="Expand">⤢</button><button class="icbtn" id="spClose" title="Close">✕</button></div></div>
+  <div class="sp-ctx" id="spCtx"></div>
+  <div class="sp-msgs" id="spMsgs"></div>
+  <div class="sp-in"><div class="sp-box"><input id="spInput" placeholder="Ask about the selection…"><button class="send" id="spSend" aria-label="Send">↑</button></div><span class="hint">Attached to your selection · never changes the main thread</span></div>
+</aside>
+<div class="pal" id="pal" hidden><div class="pal-box" role="dialog" aria-label="Search">
+  <div class="pal-in"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.8" cy="6.8" r="4.3"/><path d="M10 10l4 4"/></svg><input id="palIn" placeholder="Search campaigns, sessions, tasks, files, settings…" autocomplete="off"><kbd>esc</kbd></div>
+  <div class="pal-list" id="palList"></div>
+  <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span>Ask the agent instead: type a question and press <kbd>⇧↵</kbd></span></div>
+</div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -890,7 +1024,7 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   $$('.tabs [data-tab]').forEach(b => b.addEventListener('click', () => tab(b.dataset.tab)));
   document.addEventListener('click', e => { const b = e.target.closest('[data-tab-go]'); if (!b) return; tab(b.dataset.tabGo); if (b.dataset.s) sPane(b.dataset.s); });
   const h = (location.hash || '').replace('#', ''); if (['overview', 'tasks', 'files', 'settings'].includes(h)) tab(h);
-  $('#railToggle').addEventListener('click', () => { const on = $('#railToggle').getAttribute('aria-pressed') !== 'true'; $('#railToggle').setAttribute('aria-pressed', String(on)); $('#ov').classList.toggle('rail-off', !on); placeAsk(); });
+  $('#railToggle').addEventListener('click', () => { const on = $('#railToggle').getAttribute('aria-pressed') !== 'true'; $('#railToggle').setAttribute('aria-pressed', String(on)); $('#railToggle').title = on ? 'Hide insights panel' : 'Show insights panel'; $('#ov').classList.toggle('rail-off', !on); placeAsk(); });
   $$('[data-acc]').forEach(b => b.addEventListener('click', () => { const d = b.closest('details'); d.open = !d.open; }));
   $$('.toggle').forEach(t => t.addEventListener('click', e => { e.stopPropagation(); t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true')); }));
 
@@ -931,12 +1065,28 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   $('#resetSetup').addEventListener('click', () => { Object.keys(steps).forEach(k => steps[k] = false); renderSetup(); $$('.sug').forEach(s => s.classList.remove('done', 'open')); countSug(); tab('overview'); });
 
   // ---- projects home
-  function showHome() { $('#home').hidden = false; $('#project').hidden = true; window.scrollTo({ top: 0 }); }
-  function showProject() { $('#home').hidden = true; $('#project').hidden = false; window.scrollTo({ top: 0 }); }
+  function showHome() { $('#home').hidden = false; $('#project').hidden = true; closeSide(); window.scrollTo({ top: 0 }); }
+  function showProject(which) {
+    const configured = which !== 'holiday';
+    Object.keys(steps).forEach(k => steps[k] = configured);
+    bannerShown = configured;
+    $('#projName').textContent = configured ? 'Kitchen Brand Line' : 'Holiday Gifting 2026';
+    $('#projSub').textContent = configured ? '5 channels · 12 platforms · 2 members · Concept mockup, sample data' : 'New project · campaign launch · created by Tracy · Concept mockup';
+    $('#projIc').textContent = configured ? 'K' : 'H'; $('#projSwitch').textContent = (configured ? 'Kitchen Brand Line' : 'Holiday Gifting 2026') + ' ⌄';
+    renderSetup(); tab('overview'); backToOv();
+    $('#home').hidden = true; $('#project').hidden = false; window.scrollTo({ top: 0 });
+    if (!configured) toast('This project is empty on purpose: walk through the 3-step setup here. Sample data is shared with Kitchen once setup completes.');
+  }
   $('#toHome').addEventListener('click', showHome);
   $('#projSwitch').addEventListener('click', () => toast('Project switcher: jump between projects without going back to the list'));
-  $$('[data-open-project]').forEach(c => c.addEventListener('click', () => { if (c.dataset.openProject === 'kitchen') showProject(); else toast('This mockup only opens Kitchen Brand Line'); }));
-  [$('#newProject'), $('#newProject2')].forEach(b => b.addEventListener('click', () => toast('New project: name it, pick a template (Brand line / Client account / Campaign launch), then the 3-step setup runs inside the project')));
+  function closeRisks() { $$('.pcard .rp').forEach(r => r.hidden = true); $$('.rchev').forEach(x => x.setAttribute('aria-expanded', 'false')); }
+  $$('.rchev').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const open = b.getAttribute('aria-expanded') !== 'true'; closeRisks(); b.setAttribute('aria-expanded', String(open)); b.closest('.pcard').querySelector('.rp').hidden = !open; }));
+  document.addEventListener('click', e => { if (!e.target.closest('.pcard .rp')) closeRisks(); });
+  $$('.pcard .rp').forEach(r => r.addEventListener('click', e => e.stopPropagation()));
+  $$('[data-followup]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const w = b.dataset.followup; if (w !== 'kitchen' && w !== 'holiday') { toast('This mockup only opens Kitchen Brand Line and Holiday Gifting 2026'); return; } const name = b.closest('.pcard').querySelector('.ph b').textContent; showProject(w); setTimeout(() => openSideChat(b.dataset.q, 'Risk · ' + name), 250); }));
+  $$('[data-open-project]').forEach(c => c.addEventListener('keydown', e => { if (e.target !== c) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.click(); } }));
+  $$('[data-open-project]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('.rp, .rchev')) return; const w = c.dataset.openProject; if (w === 'kitchen' || w === 'holiday') showProject(w); else toast('This mockup only opens Kitchen Brand Line (configured) and Holiday Gifting 2026 (onboarding)'); }));
+  [$('#newProject')].forEach(b => b.addEventListener('click', () => toast('New project: name it, pick a template (Brand line / Client account / Campaign launch), then the 3-step setup runs inside the project')));
   $$('#homeSeg button').forEach(b => b.addEventListener('click', () => $$('#homeSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)))));
   // suggestion cards: compact in the rail, full detail in a drawer
   let drawerPh = null, drawerCard = null;
@@ -968,11 +1118,9 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   function setChannel(c, p) {
     ch = c; plat = p || 'all'; kpi = null;
     $$('.chb').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ch === c)));
-    $$('.chg .dd').forEach(d => d.hidden = true);
     renderKpis();
     const label = c === 'cross' ? 'Cross-channel' : (plat === 'all' ? CH[c].name : PN[plat]);
     $('#perfTitle').textContent = 'Performance · ' + label;
-    $('#tierTag').textContent = c === 'cross' ? 'Cross-channel rolls up ' + Array.from(onBar).map(k => CH[k].name).join(' + ') + (onBar.size < 5 ? ' · add channels to widen it' : '') : CH[c].tier === 'acts' ? 'Agent can act here within your approval rules' : CH[c].tier === 'suggests' ? 'Agent suggests here · you apply in the platform' : 'Agent reports here · no ad product yet';
     const rows = $$('#campTbl tbody tr'); let n = 0;
     rows.forEach(tr => { const show = c === 'cross' ? onBar.has(tr.dataset.ch) : (tr.dataset.ch === c && (plat === 'all' || tr.dataset.plat === plat)); tr.hidden = !show; if (show) n++; });
     $('#campTbl').parentElement.hidden = c === 'agentic'; $('#agenticTbl').hidden = c !== 'agentic';
@@ -990,19 +1138,20 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   function renderAddMenu() { $$('#addDd [data-add]').forEach(b => b.hidden = onBar.has(b.dataset.add)); $('#addChg').hidden = onBar.size === 5; }
   function addChannel(c) { onBar.add(c); const g = $(`.chg[data-ch="${c}"]`); g.hidden = false; g.classList.remove('flash'); void g.offsetWidth; g.classList.add('flash'); renderAddMenu(); setChannel(c, 'all'); toast(`${CH[c].name} added to your bar. Cross-channel now includes it.`); addAct('me', `You added ${CH[c].name} to the channel bar`, 'Just now'); }
   function removeChannel(c) { onBar.delete(c); $(`.chg[data-ch="${c}"]`).hidden = true; renderAddMenu(); setChannel('cross', 'all'); toast(`${CH[c].name} removed from your bar. Its data and suggestions are hidden, not deleted.`); }
-  $('#addCh').addEventListener('click', e => { e.stopPropagation(); const dd = $('#addDd'); const open = dd.hidden; $$('.chg .dd').forEach(d => d.hidden = true); dd.hidden = !open; });
   $$('#addDd [data-add]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); addChannel(b.dataset.add); }));
   $$('.chg .dd [data-remove]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); removeChannel(b.closest('.chg').dataset.ch); }));
   renderAddMenu();
   $$('.chb[data-ch]').forEach(b => b.addEventListener('click', () => setChannel(b.dataset.ch, 'all')));
-  $$('.chv').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const dd = b.nextElementSibling; const open = dd.hidden; $$('.chg .dd').forEach(d => d.hidden = true); dd.hidden = !open; }));
+  // menus open on hover (CSS); a click inside closes the menu until the pointer leaves
+  $$('.chg .dd').forEach(d => d.addEventListener('click', () => d.closest('.chg').classList.add('closed'), true));
+  $$('.chg > .chb').forEach(b => b.addEventListener('mouseenter', () => { $$('.chg').forEach(g => g.classList.toggle('closed', g !== b.parentElement)); }));
+  $$('.chb, .chg .dd button').forEach(b => b.addEventListener('click', () => b.blur()));
   $$('.chg .dd button[data-plat]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setChannel(b.closest('.chg').dataset.ch, b.dataset.plat); }));
-  document.addEventListener('click', () => $$('.chg .dd').forEach(d => d.hidden = true));
   $$('.kpi').forEach(k => k.addEventListener('click', () => { kpi = kpi === k.dataset.kpi ? null : k.dataset.kpi; $$('.kpi').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.kpi === kpi))); setCtx(); }));
 
   // ---- suggestions
   $$('[data-toggle]').forEach(b => b.addEventListener('click', () => { const d = $('#' + b.dataset.toggle); d.hidden = !d.hidden; }));
-  function countSug() { const n = $$('.sug:not(.done)').filter(x => !x.hidden).length; $('#sugCount').textContent = n ? n : '✓'; $('#sugCount').className = 'pill ' + (n ? 'warn' : 'good'); $('#sugCountBtn').textContent = n; $('#reviewBtn').hidden = !n; const hp = $('#homeKitchenPill'); hp.textContent = n ? `${n} waiting` : 'All clear'; hp.className = 'pill ' + (n ? 'warn' : 'good'); }
+  function countSug() { const n = $$('.sug:not(.done)').filter(x => !x.hidden).length; $('#sugCount').textContent = n ? n : '✓'; $('#sugCount').className = 'pill ' + (n ? 'warn' : 'good'); $('#sugCountBtn').textContent = n; $('#reviewBtn').hidden = !n; }
   $$('[data-ok]').forEach(b => b.addEventListener('click', () => { const c = b.closest('.sug'); c.classList.add('done'); if (b.dataset.txt) $('.r-text', c).textContent = b.dataset.txt; countSug(); addAct('me', 'You ' + (b.dataset.txt ? 'responded to' : 'approved') + ' "' + $('h3', c).textContent.slice(0, 48) + '…"', 'Just now'); toast('Recorded · undo available in this session'); }));
   $$('[data-learn]').forEach(c => c.addEventListener('change', () => { if (c.checked) { setAuth('pause', 1, 'Set by ticking "do this automatically" on a suggestion'); toast('Got it — ACOS-driven pauses will run automatically. Updated in MCP permissions and Memory.'); } }));
   function addAct(who, text, when) { const li = document.createElement('li'); li.className = 'flash'; li.innerHTML = `<span class="av ${who}">${{ me: 'Z', tr: 'T', ai: 'A' }[who]}</span><span>${text}<small>${when}</small></span>`; $('#actList').prepend(li); }
@@ -1166,6 +1315,7 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
     $$('.si').forEach(b => b.setAttribute('aria-current', String(b.dataset.sess === id)));
     const sdef = sessions[id] || extra[id]; if (!sdef) return;
     if (sdef.chart) { openChart(sdef.chart); $('#aiChat').innerHTML = sdef.chat; return; }
+    if (sdef.side) { if (!sideChats.find(x => x.id === sdef.side)) { toast('That side chat was closed'); return; } curSide = sdef.side; showSide(); renderSide(); return; }
     $('#ws').hidden = true; $('#setup').hidden = true; $('#emptyWs').hidden = true; $('#thread').hidden = false; window.scrollTo({ top: 0 });
     $('#thBody').innerHTML = `<div class="thead"><h2 style="font-size:17px">${sdef.title}</h2></div>` + (typeof sdef.html === 'function' ? sdef.html() : sdef.html);
     const br = $('#brOpen'); if (br) br.addEventListener('click', () => { $('#sugAcc').open = true; $('#sugAcc').scrollIntoView({ behavior: 'smooth' }); });
@@ -1178,10 +1328,97 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   let sessN = 0;
   function addSession(title, kind, open) {
     const id = 's' + (++sessN); const b = document.createElement('button'); b.className = 'si new'; b.dataset.sess = id;
-    b.innerHTML = `<span class="t">${title}</span><span class="m"><i class="dot ${kind === 'chart' ? 'chart' : 'me'}"></i>${kind === 'chart' ? 'Chart conversation' : 'You'} · just now</span>`;
+    b.innerHTML = `<span class="t">${title}</span><span class="m"><i class="dot ${kind === 'chart' ? 'chart' : kind === 'side' ? 'side' : 'me'}"></i>${kind === 'chart' ? 'Chart conversation' : kind === 'side' ? 'Side chat' : 'You'} · just now</span>`;
     $('#sessToday').prepend(b); b.addEventListener('click', () => openSession(id)); if (open) $$('.si').forEach(x => x.setAttribute('aria-current', String(x === b)));
     return id;
   }
+
+
+  // ================= side chats (select anything → "Start a side chat") =================
+  const proj = $('#project'), sp = $('#sidepanel'), selpop = $('#selpop');
+  let sideChats = [], curSide = null, pendingSel = null, spWide = false;
+  function srcOf(el) {
+    if (!el) return 'Selection';
+    if (el.closest('.insight')) return 'Agent insight';
+    if (el.closest('.sug')) return 'Suggestion · ' + ($('h3', el.closest('.sug')) || {}).textContent;
+    if (el.closest('#kpis')) return 'KPI · ' + ($('.lbl', el.closest('.kpi')) || {}).textContent;
+    if (el.closest('.chart-card')) return 'Chart · ' + ($('b', el.closest('.chart-card')) || {}).textContent;
+    if (el.closest('#campTbl')) return 'Campaign · ' + ($('.nm', el.closest('tr')) || {}).textContent;
+    if (el.closest('#agenticTbl')) return 'AI visibility · ' + ($('.nm', el.closest('tr')) || {}).textContent;
+    if (el.closest('.log')) return 'Action log';
+    if (el.closest('#thread')) return 'Session';
+    if (el.closest('.aichat')) return 'Chart conversation';
+    if (el.closest('.mem')) return 'Memory';
+    return 'Selection';
+  }
+  document.addEventListener('mouseup', e => {
+    if (e.target.closest('#sidepanel, #selpop, input, textarea, select, .seg3, .chbar')) return;
+    setTimeout(() => {
+      const sel = window.getSelection(); const text = sel ? sel.toString().trim() : '';
+      if (!text || text.length < 3 || text.length > 600 || proj.hidden) { selpop.hidden = true; return; }
+      const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+      if (!node || !node.closest('#project')) { selpop.hidden = true; return; }
+      const r = sel.getRangeAt(0).getBoundingClientRect(); if (!r.width && !r.height) return;
+      pendingSel = { text, source: srcOf(node) };
+      selpop.hidden = false;
+      const w = selpop.offsetWidth; selpop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + window.scrollX + r.width / 2 - w / 2)) + 'px';
+      selpop.style.top = (r.top + window.scrollY - selpop.offsetHeight - 8) + 'px';
+    }, 0);
+  });
+  document.addEventListener('mousedown', e => { if (!e.target.closest('#selpop')) selpop.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { selpop.hidden = true; } });
+  $('#selReply').addEventListener('click', () => { if (!pendingSel) return; selpop.hidden = true; input.value = '> ' + pendingSel.text.replace(/\s+/g, ' ') + '\n'; input.focus(); input.setSelectionRange(input.value.length, input.value.length); toast('Quoted into the task bar. Finish the sentence and send.'); });
+  $('#selSide').addEventListener('click', () => { if (!pendingSel) return; selpop.hidden = true; const q = pendingSel; pendingSel = null; window.getSelection().removeAllRanges(); if (!$('#modal').hidden) closeModal(); openSideChat(q.text, q.source); });
+
+  function openSideChat(text, source) {
+    const sc = { id: 's' + Date.now(), title: text.replace(/\s+/g, ' ').slice(0, 42), quote: text, source, msgs: [] };
+    sideChats.push(sc); curSide = sc.id; showSide(); renderSide();
+    sc.sess = addSession('Side chat: ' + sc.title, 'side', false); extra[sc.sess] = { side: sc.id };
+    sideAgent(sc, null);
+  }
+  let sessWasOff = null;
+  function setSess(open) { $('#ov').classList.toggle('sess-off', !open); placeAsk(); }
+  $$('.sessTg').forEach(b => b.addEventListener('click', () => setSess($('#ov').classList.contains('sess-off'))));
+  function showSide() { sp.hidden = false; if (!proj.classList.contains('with-side')) { sessWasOff = $('#ov').classList.contains('sess-off'); setSess(false); } proj.classList.add('with-side'); placeAsk(); }
+  function closeSide() { sp.hidden = true; proj.classList.remove('with-side'); if (sessWasOff !== null) { setSess(!sessWasOff); sessWasOff = null; } placeAsk(); }
+  function renderSide() {
+    const sc = sideChats.find(x => x.id === curSide); if (!sc) { closeSide(); return; }
+    $('#spTabs').innerHTML = sideChats.map((x, i) => `<button class="sp-tab" role="tab" aria-selected="${x.id === curSide}" data-sid="${x.id}">Side chat ${i + 1}<span class="x" data-close="${x.id}">✕</span></button>`).join('');
+    $$('#spTabs .sp-tab').forEach(b => b.addEventListener('click', e => { if (e.target.dataset.close) { sideChats = sideChats.filter(x => x.id !== e.target.dataset.close); if (curSide === e.target.dataset.close) curSide = sideChats.length ? sideChats[sideChats.length - 1].id : null; renderSide(); return; } curSide = b.dataset.sid; renderSide(); }));
+    $('#spCtx').innerHTML = `<span class="src">From ${sc.source}</span><q>${sc.quote.replace(/</g, '&lt;')}</q>`;
+    const m = $('#spMsgs'); m.innerHTML = sc.msgs.length ? sc.msgs.map(x => x.role === 'me' ? `<div class="q" style="background:var(--surface-2);border-radius:10px;padding:8px 12px;justify-self:end;max-width:92%">${x.text}</div>` : `<div class="a" style="display:grid;gap:6px">${x.html}</div>`).join('') : '<div class="empty-s">Thinking about the selection…</div>';
+    $$('#spMsgs [data-sq]').forEach(b => b.addEventListener('click', () => sideAsk(b.dataset.sq)));
+    $$('#spMsgs [data-sact]').forEach(b => b.addEventListener('click', () => sideAction(b.dataset.sact, sc)));
+    m.scrollTop = m.scrollHeight; $('#spInput').focus();
+  }
+  function chips(list) { return `<div class="chips">${list.map(q => `<button class="chip" data-sq="${q}">${q}</button>`).join('')}</div>`; }
+  function sideAgent(sc, q) {
+    const t = (sc.quote + ' ' + (q || '')).toLowerCase(); let html = '';
+    if (!q) {
+      html = `<span>Picking this up without touching the main thread. What do you want to do with it?</span>` + chips(t.match(/\$|%|roas|acos|cpc|spend|sales|budget/) ? ['Why is this happening?', 'Show the trend behind it', 'Which campaigns drive it?', 'Turn this into a task'] : t.match(/cosori|chatgpt|answer|cited|prompt/) ? ['Why does the AI recommend them?', 'What would close the gap?', 'Draft a brief for Tracy'] : t.match(/walmart|meta|tiktok|google|dsp|roku/) ? ['What can the agent do here?', 'Show this channel only', 'Turn this into a task'] : ['Explain this', 'Show the data behind it', 'Turn this into a task']);
+    } else if (/why/.test(t) && /cpc|walmart/.test(t)) html = `<span>Two broad terms on Walmart ("air fryer", "kitchen appliance") went from $1.33 to $1.86 CPC from Oct 22 while conversion stayed flat. That is 84% of the CPC rise across all channels. The fix is bids × 0.8 and pausing those two terms; the change list is in Files.</span><div class="actions"><button class="btn sm" data-sact="files">Open the change list</button><button class="btn sm quiet" data-sact="pin">Pin this answer</button></div>`;
+    else if (/why/.test(t) && /cosori|answer|chatgpt/.test(t)) html = `<span>ChatGPT cites Wirecutter, RTINGS and Amazon reviews for this prompt cluster. All three compare wattage and basket size, and your product page states neither. Cosori's does. The gap is content, not spend.</span><div class="actions"><button class="btn sm" data-sact="brief">Draft the PDP brief</button><button class="btn sm quiet" data-sact="pin">Pin this answer</button></div>`;
+    else if (/why/.test(t)) html = `<span>Short version: the Air Fryer line is carrying the week (61% of the sales lift) while Walmart's two broad terms got 40% more expensive. The first is promo build-up, the second is a bid problem. Everything else is within normal weekly variance.</span>` + chips(['Show the trend behind it', 'Which campaigns drive it?', 'Turn this into a task']);
+    else if (/trend|chart|data behind/.test(t)) { html = `<span>Opened the Spend &amp; sales chart with this in view. Ask it directly there if you want to change the parameters.</span>`; setTimeout(() => openChart('trend'), 300); }
+    else if (/which campaigns|drive/.test(t)) html = `<span>Top three by contribution: Air Fryer – Exact ($16.9K sales, 5.2 ROAS), Blender Pro – Broad ($10.9K, 4.4), Air Fryer – Prospecting on DSP ($9.4K, 2.4 but 58% new-to-brand). Walmart Air Fryer – Brand is the one pulling the other way.</span>` + chips(['Show this channel only', 'Turn this into a task']);
+    else if (/channel only|show this channel/.test(t)) { const c = /walmart|amazon|instacart/.test(t) ? 'retail' : /meta|tiktok/.test(t) ? 'social' : /google/.test(t) ? 'search' : /dsp|roku/.test(t) ? 'prog' : /chatgpt|cosori/.test(t) ? 'agentic' : 'cross'; html = `<span>Switched the workspace to ${CH[c].name}.</span>`; if (!onBar.has(c) && c !== 'cross') addChannel(c); else setChannel(c, 'all'); }
+    else if (/what can the agent do/.test(t)) html = `<span>On Walmart, Meta, TikTok and Google the agent reads data and suggests; it produces change lists you apply in the platform. On Amazon and Amazon DSP it can act within your approval rules. Walmart write access is in progress and will inherit your Amazon rules automatically.</span>` + chips(['Turn this into a task']);
+    else if (/task/.test(t)) { html = `<span>Handing this off as a task. It will plan, preview and wait for your confirmation in the main thread.</span>`; setTimeout(() => { closeSide(); input.value = 'Act on: ' + sc.quote.replace(/\s+/g, ' ').slice(0, 80); startRun(); }, 400); }
+    else if (/close the gap|brief|tracy/.test(t)) html = `<span>Draft brief for Tracy: add wattage (1700W) and basket capacity (5.8 qt) to the Air Fryer PDP title and bullets, add a comparison module against the two sources' criteria, and request 3 reviews that mention capacity. Estimated effect: visible in AI answers within 2–3 weeks of indexing.</span><div class="actions"><button class="btn sm" data-sact="brief">Send to Tracy</button><button class="btn sm quiet" data-sact="pin">Pin this answer</button></div>`;
+    else html = `<span>Here is what I have on "${sc.quote.replace(/\s+/g, ' ').slice(0, 60)}": it comes from ${sc.source.toLowerCase()}, based on the last 7 days against the previous 7. Ask me why, ask for the trend, or turn it into a task.</span>` + chips(['Why is this happening?', 'Show the trend behind it', 'Turn this into a task']);
+    sc.msgs.push({ role: 'ai', html }); renderSide();
+  }
+  function sideAsk(q) { const sc = sideChats.find(x => x.id === curSide); if (!sc) return; sc.msgs.push({ role: 'me', text: q }); renderSide(); setTimeout(() => sideAgent(sc, q), 350); }
+  function sideAction(k, sc) {
+    if (k === 'files') tab('files');
+    if (k === 'pin') { addAct('me', 'You pinned a side-chat answer about "' + sc.title + '"', 'Just now'); toast('Pinned to Members › recent activity and to this session'); }
+    if (k === 'brief') { toast('Brief drafted and sent to Tracy via Slack · logged in this session'); addAct('ai', 'Drafted a PDP brief for Tracy (from a side chat)', 'Just now'); }
+  }
+  $('#spSend').addEventListener('click', () => { const v = $('#spInput').value.trim(); if (!v) return; $('#spInput').value = ''; sideAsk(v); });
+  $('#spInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#spSend').click(); } });
+  $('#spClose').addEventListener('click', closeSide);
+  $('#spExpand').addEventListener('click', () => { spWide = !spWide; document.documentElement.style.setProperty('--sidew', spWide ? '640px' : '420px'); placeAsk(); });
+  $('#spNew').addEventListener('click', () => { toast('Select any text on the page and choose "Start a side chat"'); });
 
   // ================= charts =================
   const rnd = i => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
@@ -1352,6 +1589,58 @@ textarea.ins { width: 100%; border: 1px solid var(--line); border-radius: 10px; 
   $('#aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#aiSend').click(); } });
   $('#addChart').addEventListener('click', () => toast('Add chart: describe it in the input below, e.g. "CPC by match type, last 30 days" — the agent builds it and pins it here'));
   document.addEventListener('click', e => { const t = e.target.closest('.tile'); if (t && cur === 'heat') { charts.heat.p.hl = t.title; drawBig(); askChart('Why is ' + t.title + ' ' + (t.textContent.includes('-') ? 'red' : 'green') + '?'); } });
+
+  // ---- search (⌘K)
+  const pal = $('#pal'), palIn = $('#palIn'), palList = $('#palList'); let palIdx = 0, palHits = [];
+  function palIndex() {
+    const out = [];
+    [['overview', 'Overview'], ['tasks', 'Scheduled tasks'], ['files', 'Files'], ['settings', 'Settings']].forEach(([k, n]) => out.push({ g: 'Go to', t: n, k: 'Tab', run: () => tab(k) }));
+    [['ctx', 'Context'], ['mem', 'Memory'], ['mcp', 'MCP'], ['skills', 'Skills']].forEach(([k, n]) => out.push({ g: 'Go to', t: 'Settings · ' + n, k: 'Settings', run: () => { tab('settings'); sPane(k); } }));
+    Object.keys(CH).forEach(c => { out.push({ g: 'Channels', t: CH[c].name, k: onBar.has(c) ? 'On your bar' : 'Add to bar', run: () => { tab('overview'); onBar.has(c) ? setChannel(c, 'all') : addChannel(c); } }); });
+    Object.keys(PN).forEach(pk => { const c = PL[pk] ? PL[pk].ch : null; if (!c) return; out.push({ g: 'Platforms', t: PN[pk], k: CH[c].name, run: () => { tab('overview'); if (!onBar.has(c)) addChannel(c); setChannel(c, pk); } }); });
+    Object.keys(sessions).forEach(id => out.push({ g: 'Sessions', t: sessions[id].title, k: 'Session', run: () => { tab('overview'); openSession(id); } }));
+    Object.keys(extra).forEach(id => out.push({ g: 'Sessions', t: extra[id].title || 'Session', k: extra[id].chart ? 'Chart' : 'Side chat', run: () => { tab('overview'); openSession(id); } }));
+    $$('.ti[data-task]').forEach(t => out.push({ g: 'Scheduled tasks', t: $('.t', t).textContent, k: 'Task', run: () => { tab('tasks'); showTask(t.dataset.task); } }));
+    $$('.frow .nm').forEach(f => out.push({ g: 'Files', t: f.textContent, k: 'File', run: () => { tab('files'); f.closest('.frow').scrollIntoView({ block: 'center' }); f.closest('.frow').classList.add('flash'); } }));
+    CAMPS.forEach(c => out.push({ g: 'Campaigns', t: c.name, k: PN[c.plat] + ' · ' + c.roas.toFixed(1) + ' ROAS', run: () => { tab('overview'); openChart('heat'); charts.heat.p.hl = c.name; drawBig(); } }));
+    $$('.sug h3').forEach(h => out.push({ g: 'Suggestions', t: h.textContent, k: 'Decision', run: () => { tab('overview'); $('#sugAcc').open = true; openDrawer(h.closest('.sug')); } }));
+    return out;
+  }
+  function palRender() {
+    const q = palIn.value.trim().toLowerCase(); const all = palIndex();
+    palHits = q ? all.filter(x => (x.t + ' ' + x.g + ' ' + x.k).toLowerCase().includes(q)).slice(0, 24) : all.filter(x => x.g === 'Go to' || x.g === 'Sessions').slice(0, 12);
+    palIdx = Math.min(palIdx, Math.max(0, palHits.length - 1));
+    if (!palHits.length) { palList.innerHTML = `<div class="none">Nothing matches "${q.replace(/</g, '&lt;')}". Press ⇧↵ to ask the agent.</div>`; return; }
+    let g = ''; palList.innerHTML = palHits.map((x, i) => (x.g !== g ? ((g = x.g), `<div class="pg">${x.g}</div>`) : '') + `<button class="pi" role="option" aria-selected="${i === palIdx}" data-i="${i}"><span>${x.t}</span><span class="k">${x.k}</span></button>`).join('');
+    $$('.pi', palList).forEach(b => b.addEventListener('click', () => palGo(+b.dataset.i)));
+    const sel = $('.pi[aria-selected="true"]', palList); if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
+  function palGo(i) { const h = palHits[i]; if (!h) return; palClose(); h.run(); }
+  function palOpen() { pal.hidden = false; palIn.value = ''; palIdx = 0; palRender(); palIn.focus(); }
+  function palClose() { pal.hidden = true; }
+  $('#searchBtn').addEventListener('click', palOpen);
+  pal.addEventListener('click', e => { if (e.target === pal) palClose(); });
+  palIn.addEventListener('input', () => { palIdx = 0; palRender(); });
+  palIn.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); palIdx = Math.min(palHits.length - 1, palIdx + 1); palRender(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); palIdx = Math.max(0, palIdx - 1); palRender(); }
+    else if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); const v = palIn.value.trim(); palClose(); if (v) { tab('overview'); input.value = v; startRun(); } }
+    else if (e.key === 'Enter') { e.preventDefault(); palGo(palIdx); }
+    else if (e.key === 'Escape') { palClose(); }
+  });
+  document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal.hidden ? palOpen() : palClose(); } if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') { e.preventDefault(); palClose(); tab('overview'); input.focus(); } });
+
+  // ---- account menu, theme, language
+  const root = document.documentElement;
+  function setTheme(dark) { root.dataset.theme = dark ? 'dark' : 'light'; $$('#themeToggle, #themeToggle2').forEach(t => t.setAttribute('aria-pressed', String(dark))); }
+  $$('#themeToggle, #themeToggle2').forEach(t => t.addEventListener('click', e => { e.stopPropagation(); setTheme(t.getAttribute('aria-pressed') === 'true'); }));
+  const initialDark = matchMedia('(prefers-color-scheme: dark)').matches; $$('#themeToggle, #themeToggle2').forEach(t => t.setAttribute('aria-pressed', String(initialDark)));
+  $$('#langSeg button, #langSeg2 button').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); $$('#langSeg button, #langSeg2 button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.lang === b.dataset.lang))); toast(b.dataset.lang === 'zh' ? '界面语言切换为中文（此原型仅英文内容）' : 'Interface language set to English'); }));
+  $$('.acctb').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const m = b.nextElementSibling; const open = m.hidden; $$('.acctm').forEach(x => x.hidden = true); $$('.acctb').forEach(x => x.setAttribute('aria-expanded', 'false')); m.hidden = !open; b.setAttribute('aria-expanded', String(open)); }));
+  $$('.acctm').forEach(m => m.addEventListener('click', e => e.stopPropagation()));
+  document.addEventListener('click', () => { $$('.acctm').forEach(x => x.hidden = true); $$('.acctb').forEach(x => x.setAttribute('aria-expanded', 'false')); });
+  $$('[data-acct]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.acct; $$('.acctm').forEach(x => x.hidden = true); toast(k === 'account' ? 'My account: profile, password, notification preferences' : k === 'users' ? 'Role & user management: invite teammates, set Owner / Editor / Viewer per project, approval limits per role' : 'Signed out (mockup)'); }));
+  $$('[data-xq]').forEach(b => b.addEventListener('click', () => { if (/Holiday/.test(b.dataset.xq)) { showProject('holiday'); return; } showProject('kitchen'); if (/decisions/.test(b.dataset.xq)) setTimeout(() => { $('#sugAcc').open = true; $('#sugAcc').scrollIntoView({ behavior: 'smooth' }); }, 300); else setTimeout(() => { input.value = b.dataset.xq; startRun(); }, 300); }));
 
   showTask('pacing');
   renderKpis(); renderSetup(); placeAsk();
